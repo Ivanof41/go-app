@@ -24,13 +24,8 @@ export function BrandPanel() {
           alt="Go! — Connect24"
           width={200}
           height={172}
-          className="mb-8"
+          className="mb-10"
         />
-
-        <p className="mb-10 max-w-sm text-sm text-c24-text-muted">
-          La plataforma de Connect24 para gestionar inventario y controlar los montajes en
-          marcha.
-        </p>
 
         <ul className="flex flex-col items-center gap-4">
           {FEATURES.map((feature) => (
