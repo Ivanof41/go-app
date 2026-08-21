@@ -24,11 +24,9 @@ App interna de Connect24 para gestión de inventario y control de montajes.
 
 ## Logos
 
-Colocar manualmente en `public/`:
-- `logo-light.svg`
-- `logo-dark.svg`
-
-No se generan placeholders — la app ya los referencia en la pantalla de login.
+En `public/`:
+- `LogoGO.png` — logo completo (wordmark + tagline + dominio), usado en la pantalla de login.
+- `LogoOnlyGo.png` — solo el ícono/marca, disponible para usos futuros (favicon, sidebar compacto, etc.).
 
 ## Base de datos
 

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export default function LoginPage() {
@@ -10,18 +11,11 @@ export default function LoginPage() {
       }}
     >
       <div className="w-full max-w-[400px] rounded-[20px] border border-c24-border bg-white p-8 shadow-lg shadow-c24-navy/5">
-        <div className="mb-8 flex flex-col items-center gap-2">
-          <picture>
-            <source srcSet="/logo-dark.svg" media="(prefers-color-scheme: dark)" />
-            <img src="/logo-light.svg" alt="Go! — Connect24" width={160} height={48} />
-          </picture>
+        <div className="mb-6 flex flex-col items-center">
+          <Image src="/LogoGO.png" alt="Go! — Connect24" width={200} height={172} priority />
         </div>
 
         <LoginForm />
-
-        <p className="mt-8 text-center text-xs text-c24-text-muted">
-          Connect24 · Go!
-        </p>
       </div>
     </main>
   );

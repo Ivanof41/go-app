@@ -11,6 +11,9 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Go! | Connect24",
   description: "Inventario y control de montajes — Connect24",
+  icons: {
+    icon: "/LogoOnlyGo.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
