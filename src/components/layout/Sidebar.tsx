@@ -102,7 +102,8 @@ function SidebarNavItem({
         onMouseEnter={handleEnter}
         onMouseLeave={() => setHovered(false)}
         className={clsx(
-          "group flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors",
+          "group flex items-center rounded-md px-2.5 py-2 text-sm transition-colors",
+          collapsed ? "justify-center" : "gap-3",
           active
             ? "font-semibold text-c24-navy"
             : "font-medium text-c24-text-muted hover:text-c24-navy",
