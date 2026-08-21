@@ -4,6 +4,8 @@ App interna de Connect24 para gestión de inventario y control de montajes.
 
 **Etapa 1 (actual):** estructura base del proyecto + login funcional contra Postgres. El resto (inventario, montajes, dashboard real) se construye en etapas posteriores.
 
+**En producción:** https://go.connect24.io (desde 2026-08-21).
+
 ## Stack
 
 - Next.js (App Router, TypeScript)
@@ -38,10 +40,17 @@ npm run db:migrate
 
 ## Despliegue en producción
 
-Sigue el mismo patrón que `web.connect24.io`: Nginx como reverse proxy + Certbot para SSL, pero aquí Nginx hace `proxy_pass` hacia la app en Docker (puerto interno `127.0.0.1:3001`, reservado en `/opt/apps/PORTS.md`) en vez de servir archivos estáticos.
+Nginx como reverse proxy + Certbot para SSL (mismo patrón que `web.connect24.io`), pero aquí Nginx hace `proxy_pass` hacia la app en Docker (puerto interno `127.0.0.1:3001`, reservado en `/opt/apps/PORTS.md`) en vez de servir archivos estáticos. Corre como un proyecto Docker Compose separado del de desarrollo (`-p go-app-prod`), con su propio `.env.production` (no versionado) y su propia base de datos (`go-postgres-prod`, sin puerto publicado al host).
 
+Para actualizar tras un cambio:
 ```
-docker compose -f docker-compose.prod.yml up -d --build
+git pull
+docker compose -p go-app-prod --env-file .env.production -f docker-compose.prod.yml up -d --build
 ```
 
-Luego, en el servidor, agregar el bloque de Nginx para `go.connect24.io` con `proxy_pass http://127.0.0.1:3001` y correr `certbot --nginx -d go.connect24.io`.
+Si el cambio agrega una migración nueva:
+```
+docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" -i go-postgres-prod psql -U go_app -d go_db < drizzle/migrations/<archivo>.sql
+```
+
+El bloque de Nginx para `go.connect24.io` y el certificado SSL (Certbot) ya están configurados en el servidor.

@@ -7,6 +7,10 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Placeholders solo para que el build pueda importar los módulos que validan env vars.
+# Los valores reales se inyectan en runtime vía docker-compose (variables de entorno del contenedor).
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+ENV AUTH_SECRET="build-time-placeholder"
 RUN npm run build
 
 FROM node:22-alpine AS runner

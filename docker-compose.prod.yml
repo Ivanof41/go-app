@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: go-postgres
+    container_name: go-postgres-prod
     restart: unless-stopped
     environment:
       POSTGRES_USER: go_app
@@ -12,7 +12,7 @@ services:
 
   app:
     build: .
-    container_name: go-app
+    container_name: go-app-prod
     restart: unless-stopped
     depends_on:
       - postgres
