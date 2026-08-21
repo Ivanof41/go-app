@@ -8,6 +8,8 @@
   --c24-text-muted: #4a6070;
   --c24-bg: #ffffff;
   --c24-border: rgba(0, 60, 91, 0.1);
+  --c24-danger: #dc2626;
+  --c24-danger-light: #fef2f2;
 
   --background: var(--c24-bg);
   --foreground: var(--c24-navy);
@@ -26,7 +28,14 @@
   --color-c24-teal-light: var(--c24-teal-light);
   --color-c24-text-muted: var(--c24-text-muted);
   --color-c24-border: var(--c24-border);
+  --color-c24-danger: var(--c24-danger);
+  --color-c24-danger-light: var(--c24-danger-light);
   --font-sans: var(--font-dm-sans);
+
+  /* Conecta nuestra escala de radios (definida arriba) a las utilidades rounded-sm/md/lg */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
 }
 
 body {

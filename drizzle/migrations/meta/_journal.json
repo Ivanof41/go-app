@@ -8,6 +8,13 @@
       "when": 1787341535266,
       "tag": "0000_dark_joystick",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787347920740,
+      "tag": "0001_special_freak",
+      "breakpoints": true
     }
   ]
 }

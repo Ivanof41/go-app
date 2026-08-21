@@ -1,13 +1,23 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getCurrentUser } from "@/lib/current-user";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Topbar } from "@/components/layout/Topbar";
 
 export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
 
-  return <div className="min-h-screen bg-c24-teal-light">{children}</div>;
+  return (
+    <div className="flex min-h-screen bg-c24-teal-light">
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar user={user} />
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
+    </div>
+  );
 }
