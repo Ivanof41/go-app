@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Go!
 
-## Getting Started
+App interna de Connect24 para gestión de inventario y control de montajes.
 
-First, run the development server:
+**Etapa 1 (actual):** estructura base del proyecto + login funcional contra Postgres. El resto (inventario, montajes, dashboard real) se construye en etapas posteriores.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stack
+
+- Next.js (App Router, TypeScript)
+- Auth.js (NextAuth v5) con Credentials Provider, sesión JWT
+- Drizzle ORM + PostgreSQL
+- Tailwind CSS v4
+
+## Desarrollo local
+
+1. Copiar `.env.example` a `.env` y completar los valores (`AUTH_SECRET` se genera con `npx auth secret`).
+2. Levantar Postgres: `docker compose up -d`
+3. Aplicar migraciones: `npm run db:migrate`
+4. Crear el primer usuario admin (usa `ADMIN_EMAIL`/`ADMIN_PASSWORD`/`ADMIN_NAME` del `.env`):
+   ```
+   npm run seed:admin
+   ```
+5. `npm run dev` y abrir `http://localhost:3000`
+
+## Logos
+
+Colocar manualmente en `public/`:
+- `logo-light.svg`
+- `logo-dark.svg`
+
+No se generan placeholders — la app ya los referencia en la pantalla de login.
+
+## Base de datos
+
+Cambios al esquema (`src/db/schema.ts`) generan una nueva migración:
+```
+npm run db:generate
+npm run db:migrate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Despliegue en producción
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Sigue el mismo patrón que `web.connect24.io`: Nginx como reverse proxy + Certbot para SSL, pero aquí Nginx hace `proxy_pass` hacia la app en Docker (puerto interno `127.0.0.1:3001`, reservado en `/opt/apps/PORTS.md`) en vez de servir archivos estáticos.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+docker compose -f docker-compose.prod.yml up -d --build
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Luego, en el servidor, agregar el bloque de Nginx para `go.connect24.io` con `proxy_pass http://127.0.0.1:3001` y correr `certbot --nginx -d go.connect24.io`.
