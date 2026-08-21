@@ -48,35 +48,39 @@ export function Sidebar() {
         <ChevronLeft className={clsx("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
       </button>
 
-      <nav className="flex flex-1 flex-col gap-1 py-4">
+      <nav className="flex flex-1 flex-col gap-1 px-2.5 py-4">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
-            <div key={href} className="relative">
-              {active && (
-                <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r-full bg-c24-teal" />
+            <Link
+              key={href}
+              href={href}
+              title={collapsed ? label : undefined}
+              className={clsx(
+                "group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
+                active
+                  ? "font-semibold text-c24-navy"
+                  : "font-medium text-c24-text-muted hover:text-c24-navy",
               )}
-              <Link
-                href={href}
-                title={collapsed ? label : undefined}
+            >
+              <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={active ? 2 : 1.75} />
+              <span
                 className={clsx(
-                  "mx-2.5 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
-                  active
-                    ? "font-semibold text-c24-navy"
-                    : "font-medium text-c24-text-muted hover:text-c24-navy",
+                  "overflow-hidden whitespace-nowrap transition-all duration-300",
+                  collapsed ? "w-0 opacity-0" : "w-auto opacity-100",
                 )}
               >
-                <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={active ? 2 : 1.75} />
-                <span
-                  className={clsx(
-                    "overflow-hidden whitespace-nowrap transition-all duration-300",
-                    collapsed ? "w-0 opacity-0" : "w-auto opacity-100",
-                  )}
-                >
+                <span className="relative inline-block pb-1">
                   {label}
+                  <span
+                    className={clsx(
+                      "absolute bottom-0 left-0 h-[1.5px] rounded-full bg-c24-teal transition-all duration-300",
+                      active ? "w-full" : "w-0 group-hover:w-full",
+                    )}
+                  />
                 </span>
-              </Link>
-            </div>
+              </span>
+            </Link>
           );
         })}
       </nav>
