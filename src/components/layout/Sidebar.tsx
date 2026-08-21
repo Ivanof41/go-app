@@ -32,10 +32,12 @@ export function Sidebar() {
   return (
     <aside
       className={clsx(
-        "sticky top-0 flex h-screen flex-col border-r border-c24-border bg-white transition-[width] duration-300 ease-in-out",
+        "sticky top-0 flex h-screen flex-col bg-white shadow-[4px_0_24px_-8px_rgba(0,60,91,0.15)] transition-[width] duration-300 ease-in-out",
         collapsed ? "w-16" : "w-48",
       )}
     >
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-c24-teal/40 to-transparent" />
+
       <div className="flex h-16 items-center justify-center border-b border-c24-border">
         <Image src="/LogoOnlyGo.png" alt="Go!" width={26} height={17} />
       </div>

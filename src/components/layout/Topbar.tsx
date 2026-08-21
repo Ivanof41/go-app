@@ -28,7 +28,9 @@ export function Topbar({ user }: { user: CurrentUser }) {
   }, []);
 
   return (
-    <header className="flex h-16 items-center justify-end border-b border-c24-border bg-white px-6">
+    <header className="relative flex h-16 items-center justify-end bg-white px-6 shadow-[0_4px_24px_-8px_rgba(0,60,91,0.15)]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-c24-teal/40 to-transparent" />
+
       <div ref={ref} className="relative">
         <button
           type="button"

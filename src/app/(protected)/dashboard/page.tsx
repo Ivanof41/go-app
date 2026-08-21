@@ -23,7 +23,7 @@ export default async function DashboardPage() {
 
         <div className="relative">
           <h1 className="text-2xl font-semibold text-white">Bienvenido, {user.name}</h1>
-          <p className="mt-1 text-sm text-white/70">Este es tu panel de Go!.</p>
+          <p className="mt-1 text-sm text-white/70">Este es tu panel de Go!</p>
         </div>
       </div>
 
