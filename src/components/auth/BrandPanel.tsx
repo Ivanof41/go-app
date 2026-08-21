@@ -8,7 +8,7 @@ const FEATURES = [
 
 export function BrandPanel() {
   return (
-    <div className="relative hidden w-1/2 flex-col justify-center overflow-hidden bg-white px-16 md:flex">
+    <div className="relative hidden w-1/2 flex-col items-center justify-center overflow-hidden bg-white px-16 text-center md:flex">
       <div
         className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full opacity-10 blur-3xl"
         style={{ background: "#6ab5ab" }}
@@ -18,7 +18,7 @@ export function BrandPanel() {
         style={{ background: "#003c5b" }}
       />
 
-      <div className="relative">
+      <div className="relative flex flex-col items-center">
         <Image
           src="/LogoGO.png"
           alt="Go! — Connect24"
@@ -32,7 +32,7 @@ export function BrandPanel() {
           marcha.
         </p>
 
-        <ul className="flex flex-col gap-4">
+        <ul className="flex flex-col items-center gap-4">
           {FEATURES.map((feature) => (
             <li key={feature} className="flex items-center gap-3 text-sm text-c24-navy">
               <CheckIcon />
