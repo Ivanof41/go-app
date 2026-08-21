@@ -4,8 +4,9 @@ Primera pantalla interna real de la app, sobre la base del login (Etapa 1). Cons
 
 ## Qué se construyó
 
-- **Sidebar** (`src/components/layout/Sidebar.tsx`): colapsable/expandible (persistido en `localStorage`, clave `go:sidebar-collapsed`), fondo navy en continuidad con el login. Por ahora solo dos ítems: Dashboard y Ajustes — no se agregaron placeholders de Inventario/Montajes como enlaces de navegación (para no tener enlaces muertos); cuando esas features existan, se agregan a `NAV_ITEMS`.
-- **Topbar** (`src/components/layout/Topbar.tsx`): avatar + nombre del usuario, con un dropdown a mano (sin librería) que lleva a Ajustes o cierra sesión.
+- **Sidebar** (`src/components/layout/Sidebar.tsx`): colapsable/expandible (persistido en `localStorage`, clave `go:sidebar-collapsed`), fondo blanco (no navy — el logo `LogoOnlyGo.png` es navy y no se leía bien sobre un fondo navy, igual que nos pasó en el login; en vez de parchear el ícono con un chip blanco, se cambió el fondo del Sidebar a claro, más coherente con el resto de la app). Ancho angosto (`w-48` expandido / `w-16` colapsado). Solo un ítem por ahora: Dashboard — Ajustes se sacó de la navegación del Sidebar, queda accesible únicamente desde el dropdown del Topbar (evita duplicar el mismo destino en dos lugares). Cuando existan Inventario/Montajes, se agregan a `NAV_ITEMS`.
+- **Topbar** (`src/components/layout/Topbar.tsx`): avatar + nombre del usuario, con un dropdown a mano (sin librería) que lleva a Ajustes o cierra sesión. Es el único punto de acceso a Ajustes.
+- **Íconos**: se migró de SVG dibujados a mano a `lucide-react` (ver [design-system.md](../design-system.md#íconos)) — los hechos a mano no se veían suficientemente profesionales.
 - **`getCurrentUser()`** (`src/lib/current-user.ts`): fuente de verdad para nombre/email/avatar, independiente del JWT — ver [architecture.md](../architecture.md#sesión-y-datos-de-perfil) para el por qué.
 - **`/ajustes`**: cambiar nombre, email y contraseña, y subir/recortar foto de perfil.
 - **Sistema de diseño**: se cerraron huecos que existían desde el login (radios no conectados a Tailwind, sin color de "peligro", sin `Card`/`Modal` reutilizables) — ver [design-system.md](../design-system.md).

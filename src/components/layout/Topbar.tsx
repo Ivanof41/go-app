@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ChevronDown, LogOut, Settings } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { signOutAction } from "@/app/(protected)/actions";
 import { clsx } from "@/lib/clsx";
@@ -36,6 +37,7 @@ export function Topbar({ user }: { user: CurrentUser }) {
         >
           <Avatar src={user.avatar} name={user.name} size="sm" />
           <span className="text-sm font-medium text-c24-navy">{user.name}</span>
+          <ChevronDown className="h-4 w-4 text-c24-text-muted" strokeWidth={1.75} />
         </button>
 
         {open && (
@@ -43,15 +45,19 @@ export function Topbar({ user }: { user: CurrentUser }) {
             <Link
               href="/ajustes"
               onClick={() => setOpen(false)}
-              className={clsx("block px-4 py-2.5 text-sm text-c24-navy hover:bg-c24-teal-light")}
+              className={clsx(
+                "flex items-center gap-2.5 px-4 py-2.5 text-sm text-c24-navy hover:bg-c24-teal-light",
+              )}
             >
+              <Settings className="h-4 w-4" strokeWidth={1.75} />
               Ajustes
             </Link>
             <form action={signOutAction}>
               <button
                 type="submit"
-                className="block w-full px-4 py-2.5 text-left text-sm text-c24-danger hover:bg-c24-danger-light"
+                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-c24-danger hover:bg-c24-danger-light"
               >
+                <LogOut className="h-4 w-4" strokeWidth={1.75} />
                 Cerrar sesión
               </button>
             </form>

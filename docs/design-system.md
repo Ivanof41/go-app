@@ -8,7 +8,7 @@ Definida en `:root` y expuesta a Tailwind vía `@theme inline` (utilidades `bg-c
 
 | Token | Hex | Uso |
 |---|---|---|
-| `--c24-navy` | `#003c5b` | Texto principal, botón `primary`, fondo del Sidebar |
+| `--c24-navy` | `#003c5b` | Texto principal, botón `primary` |
 | `--c24-teal` | `#6ab5ab` | Acento, botón `accent`, focus ring, avatar fallback |
 | `--c24-teal-dark` | `#4f9a91` | Hover de navy/teal |
 | `--c24-teal-light` | `#edf4f3` | Fondos suaves (área de contenido, mensajes de éxito) |
@@ -48,4 +48,4 @@ Imagen circular si hay `src` (data URL), o iniciales sobre fondo teal si no. Tam
 
 ## Íconos
 
-SVG inline, sin librería externa. Convención: `stroke="currentColor"`, sin relleno (`fill="none"`), trazos con `strokeLinecap="round"` donde aplique — ver `src/components/layout/icons.tsx` y el `CheckIcon` de `BrandPanel.tsx` como referencia de estilo.
+**`lucide-react`** (line icons, `strokeWidth={1.75}` por convención en Sidebar/Topbar). Se eligió esta librería porque los SVG dibujados a mano (usados inicialmente en el Sidebar) no se veían suficientemente profesionales; `lucide-react` es tree-shakeable (cada ícono se importa por nombre, no infla el bundle) y su estilo de trazo combina bien con la paleta existente. El único ícono hecho a mano que se mantiene es el `CheckIcon` de `BrandPanel.tsx` (parte del branding del login, no un ícono de UI genérico).
