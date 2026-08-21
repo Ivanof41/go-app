@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, ChevronLeft } from "lucide-react";
+import { Gauge, ChevronLeft, type LucideIcon } from "lucide-react";
 import { clsx } from "@/lib/clsx";
 
 const STORAGE_KEY = "go:sidebar-collapsed";
@@ -49,41 +50,103 @@ export function Sidebar() {
       </button>
 
       <nav className="flex flex-1 flex-col gap-1 px-2.5 py-4">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
-            <Link
+            <SidebarNavItem
               key={href}
               href={href}
-              title={collapsed ? label : undefined}
-              className={clsx(
-                "group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
-                active
-                  ? "font-semibold text-c24-navy"
-                  : "font-medium text-c24-text-muted hover:text-c24-navy",
-              )}
-            >
-              <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={active ? 2 : 1.75} />
-              <span
-                className={clsx(
-                  "overflow-hidden whitespace-nowrap transition-all duration-300",
-                  collapsed ? "w-0 opacity-0" : "w-auto opacity-100",
-                )}
-              >
-                <span className="relative inline-block pb-1">
-                  {label}
-                  <span
-                    className={clsx(
-                      "absolute bottom-0 left-0 h-[1.5px] rounded-full bg-c24-teal transition-all duration-300",
-                      active ? "w-full" : "w-0 group-hover:w-full",
-                    )}
-                  />
-                </span>
-              </span>
-            </Link>
+              label={label}
+              icon={icon}
+              active={active}
+              collapsed={collapsed}
+            />
           );
         })}
       </nav>
     </aside>
+  );
+}
+
+function SidebarNavItem({
+  href,
+  label,
+  icon: Icon,
+  active,
+  collapsed,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  active: boolean;
+  collapsed: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
+  const linkRef = useRef<HTMLAnchorElement>(null);
+
+  function handleEnter() {
+    if (!collapsed) return;
+    const box = linkRef.current?.getBoundingClientRect();
+    if (box) setTooltipPos({ top: box.top + box.height / 2, left: box.right + 12 });
+    setHovered(true);
+  }
+
+  return (
+    <>
+      <Link
+        ref={linkRef}
+        href={href}
+        onMouseEnter={handleEnter}
+        onMouseLeave={() => setHovered(false)}
+        className={clsx(
+          "group flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors",
+          active
+            ? "font-semibold text-c24-navy"
+            : "font-medium text-c24-text-muted hover:text-c24-navy",
+        )}
+      >
+        <span
+          className={clsx(
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
+            active && "bg-c24-teal-light",
+          )}
+        >
+          <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2 : 1.75} />
+        </span>
+        <span
+          className={clsx(
+            "overflow-hidden whitespace-nowrap transition-all duration-300",
+            collapsed ? "w-0 opacity-0" : "w-auto opacity-100",
+          )}
+        >
+          <span className="relative inline-block pb-1">
+            {label}
+            <span
+              className={clsx(
+                "absolute bottom-0 left-0 h-[1.5px] rounded-full bg-c24-teal transition-all duration-300",
+                active ? "w-full" : "w-0 group-hover:w-full",
+              )}
+            />
+          </span>
+        </span>
+      </Link>
+
+      {collapsed &&
+        tooltipPos &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <span
+            style={{ top: tooltipPos.top, left: tooltipPos.left }}
+            className={clsx(
+              "pointer-events-none fixed z-50 -translate-y-1/2 whitespace-nowrap rounded-md bg-c24-navy px-2.5 py-1.5 text-xs font-medium text-white shadow-lg transition-all duration-150",
+              hovered ? "translate-x-0 opacity-100" : "-translate-x-1 opacity-0",
+            )}
+          >
+            {label}
+          </span>,
+          document.body,
+        )}
+    </>
   );
 }
