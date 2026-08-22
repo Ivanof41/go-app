@@ -36,6 +36,13 @@
       "when": 1787429687743,
       "tag": "0004_worried_wither",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787431110203,
+      "tag": "0005_loose_hammerhead",
+      "breakpoints": true
     }
   ]
 }

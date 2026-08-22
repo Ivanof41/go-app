@@ -12,17 +12,21 @@ import {
   deleteZoneAction,
 } from "@/app/(protected)/inventario/zonas/actions";
 
-type Zone = { id: string; name: string; location: string | null };
+type Zone = { id: string; name: string; location: string | null; rows: number; cols: number };
 
 export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: () => void }) {
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
+  const [newRows, setNewRows] = useState("3");
+  const [newCols, setNewCols] = useState("4");
   const [createError, setCreateError] = useState<string | null>(null);
   const [isCreating, startCreate] = useTransition();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [editingLocation, setEditingLocation] = useState("");
+  const [editingRows, setEditingRows] = useState("3");
+  const [editingCols, setEditingCols] = useState("4");
   const [editError, setEditError] = useState<string | null>(null);
   const [isEditing, startEdit] = useTransition();
 
@@ -37,6 +41,8 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
       const formData = new FormData();
       formData.set("name", newName.trim());
       formData.set("location", newLocation.trim());
+      formData.set("rows", newRows);
+      formData.set("cols", newCols);
       const result = await createZoneAction(undefined, formData);
       if (result?.error) {
         setCreateError(result.error);
@@ -44,6 +50,8 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
       }
       setNewName("");
       setNewLocation("");
+      setNewRows("3");
+      setNewCols("4");
     });
   }
 
@@ -55,6 +63,8 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
       formData.set("id", id);
       formData.set("name", editingName.trim());
       formData.set("location", editingLocation.trim());
+      formData.set("rows", editingRows);
+      formData.set("cols", editingCols);
       const result = await updateZoneAction(undefined, formData);
       if (result?.error) {
         setEditError(result.error);
@@ -94,6 +104,32 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
           {isCreating ? "Agregando…" : "Agregar"}
         </Button>
       </div>
+      <div className="mt-2 flex items-center gap-2">
+        <label htmlFor="new-rows" className="text-xs font-medium text-c24-text-muted">
+          Baldas
+        </label>
+        <Input
+          id="new-rows"
+          type="number"
+          min={1}
+          max={12}
+          value={newRows}
+          onChange={(e) => setNewRows(e.target.value)}
+          className="w-16"
+        />
+        <label htmlFor="new-cols" className="text-xs font-medium text-c24-text-muted">
+          Posiciones por balda
+        </label>
+        <Input
+          id="new-cols"
+          type="number"
+          min={1}
+          max={12}
+          value={newCols}
+          onChange={(e) => setNewCols(e.target.value)}
+          className="w-16"
+        />
+      </div>
       {createError && (
         <p className="mt-2 rounded-md bg-c24-danger-light px-3 py-2 text-sm text-c24-danger">{createError}</p>
       )}
@@ -107,6 +143,30 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
               <>
                 <Input value={editingName} onChange={(e) => setEditingName(e.target.value)} autoFocus />
                 <Input value={editingLocation} onChange={(e) => setEditingLocation(e.target.value)} />
+                <label htmlFor={`edit-rows-${zone.id}`} className="text-xs font-medium text-c24-text-muted">
+                  Baldas
+                </label>
+                <Input
+                  id={`edit-rows-${zone.id}`}
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={editingRows}
+                  onChange={(e) => setEditingRows(e.target.value)}
+                  className="w-16"
+                />
+                <label htmlFor={`edit-cols-${zone.id}`} className="text-xs font-medium text-c24-text-muted">
+                  Posiciones
+                </label>
+                <Input
+                  id={`edit-cols-${zone.id}`}
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={editingCols}
+                  onChange={(e) => setEditingCols(e.target.value)}
+                  className="w-16"
+                />
                 <Button type="button" fullWidth={false} disabled={isEditing} onClick={() => handleSaveEdit(zone.id)}>
                   Guardar
                 </Button>
@@ -120,6 +180,9 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
                 <div className="flex-1">
                   <p className="text-sm text-c24-navy">{zone.name}</p>
                   {zone.location && <p className="text-xs text-c24-text-muted">{zone.location}</p>}
+                  <p className="text-xs text-c24-text-muted">
+                    {zone.rows} baldas × {zone.cols} posiciones
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -128,6 +191,8 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
                     setEditingId(zone.id);
                     setEditingName(zone.name);
                     setEditingLocation(zone.location ?? "");
+                    setEditingRows(String(zone.rows));
+                    setEditingCols(String(zone.cols));
                     setEditError(null);
                   }}
                   className="p-1.5 text-c24-text-muted hover:text-c24-navy"

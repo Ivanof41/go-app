@@ -10,8 +10,11 @@ export async function getZonesWithStock() {
       id: sensorStock.id,
       zoneId: sensorStock.zoneId,
       quantity: sensorStock.quantity,
+      row: sensorStock.row,
+      col: sensorStock.col,
       sensorId: sensors.id,
       sensorName: sensors.name,
+      sensorType: sensors.type,
     })
     .from(sensorStock)
     .innerJoin(sensors, eq(sensors.id, sensorStock.sensorId));
@@ -23,5 +26,8 @@ export async function getZonesWithStock() {
 }
 
 export async function getSensorOptions() {
-  return db.select({ id: sensors.id, name: sensors.name }).from(sensors).orderBy(asc(sensors.name));
+  return db
+    .select({ id: sensors.id, name: sensors.name, type: sensors.type })
+    .from(sensors)
+    .orderBy(asc(sensors.name));
 }

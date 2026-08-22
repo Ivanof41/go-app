@@ -11,7 +11,6 @@ export default async function ZonasPage() {
 
   const zones = await getZonesWithStock();
   const sensorOptions = await getSensorOptions();
-  const zoneOptions = zones.map((z) => ({ id: z.id, name: z.name }));
 
   return (
     <div className="px-6 py-10">
@@ -30,7 +29,7 @@ export default async function ZonasPage() {
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {zones.map((zone) => (
-            <ZoneCard key={zone.id} zone={zone} sensorOptions={sensorOptions} zoneOptions={zoneOptions} />
+            <ZoneCard key={zone.id} zone={zone} sensorOptions={sensorOptions} />
           ))}
         </div>
       )}

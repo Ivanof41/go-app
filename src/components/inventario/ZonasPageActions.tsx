@@ -5,21 +5,20 @@ import { Plus, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ManageZonesModal } from "@/components/inventario/ManageZonesModal";
 import { AddStockModal } from "@/components/inventario/AddStockModal";
+import type { ZoneGridCell } from "@/components/inventario/ZoneGrid";
 
-type Zone = { id: string; name: string; location: string | null };
-type Option = { id: string; name: string };
+type Zone = { id: string; name: string; location: string | null; rows: number; cols: number; stock: ZoneGridCell[] };
+type SensorOption = { id: string; name: string; type: string };
 
 export function ZonasPageActions({
   zones,
   sensorOptions,
 }: {
   zones: Zone[];
-  sensorOptions: Option[];
+  sensorOptions: SensorOption[];
 }) {
   const [showManageZones, setShowManageZones] = useState(false);
   const [showAddStock, setShowAddStock] = useState(false);
-
-  const zoneOptions = zones.map((z) => ({ id: z.id, name: z.name }));
 
   return (
     <div className="flex gap-2">
@@ -34,7 +33,7 @@ export function ZonasPageActions({
       {showAddStock && (
         <AddStockModal
           sensorOptions={sensorOptions}
-          zoneOptions={zoneOptions}
+          zones={zones}
           onSaved={() => setShowAddStock(false)}
           onClose={() => setShowAddStock(false)}
         />

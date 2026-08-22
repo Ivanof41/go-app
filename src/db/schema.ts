@@ -76,6 +76,11 @@ export const zones = pgTable("zones", {
   name: varchar("name", { length: 120 }).notNull().unique(),
   location: varchar("location", { length: 255 }),
   position: integer("position").notNull().default(0),
+  // Forma de la rejilla visual (baldas × posiciones por balda) que se muestra en
+  // /inventario/zonas. Uniforme a propósito: todas las baldas de una zona tienen el
+  // mismo número de posiciones — ver docs/features/inventario.md.
+  rows: integer("rows").notNull().default(3),
+  cols: integer("cols").notNull().default(4),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -91,11 +96,16 @@ export const sensorStock = pgTable(
       .notNull()
       .references(() => zones.id, { onDelete: "restrict" }),
     quantity: integer("quantity").notNull().default(0),
+    // Celda dentro de la rejilla de la zona (0-indexado). El único índice está en
+    // (zoneId, row, col), no en (sensorId, zoneId): una celda solo admite un sensor,
+    // pero el mismo sensor sí puede repetirse en varias celdas de la misma zona.
+    row: integer("row").notNull(),
+    col: integer("col").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    uniqueIndex("sensor_stock_sensor_zone_unique").on(table.sensorId, table.zoneId),
+    uniqueIndex("sensor_stock_zone_cell_unique").on(table.zoneId, table.row, table.col),
     check("sensor_stock_quantity_non_negative", sql`${table.quantity} >= 0`),
   ],
 );
