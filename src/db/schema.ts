@@ -25,8 +25,8 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// Catálogo de referencia — mismo shape a propósito (id + name + timestamps),
-// permite el componente de UI genérico CatalogSection.
+// Catálogo de referencia — se crean al vuelo desde el formulario de sensor (no tienen
+// pantalla propia de gestión), por eso alcanza con id + name + timestamps.
 export const brands = pgTable("brands", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 150 }).notNull().unique(),

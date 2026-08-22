@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { QuickCreateModal } from "@/components/inventario/QuickCreateModal";
-import type { CatalogAction } from "@/components/inventario/CatalogSection";
+import type { CatalogAction } from "@/app/(protected)/inventario/sensores/actions";
 
 type Option = { id: string; name: string };
 

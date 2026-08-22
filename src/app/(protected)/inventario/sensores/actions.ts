@@ -5,9 +5,94 @@ import { count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { sensors, sensorStock } from "@/db/schema";
+import { brands, providers, sensors, sensorStock, technologies } from "@/db/schema";
 
 export type ActionState = { error?: string; success?: string } | undefined;
+
+// Estado enriquecido para las acciones de creación rápida de Marca/Tecnología/Proveedor
+// desde el propio formulario de sensor (ver EntitySelectField/QuickCreateModal) — necesitan
+// devolver el id/name de la entidad recién creada para seleccionarla sin un fetch adicional.
+export type CatalogActionState =
+  | { error?: string; success?: string; id?: string; name?: string }
+  | undefined;
+export type CatalogAction = (
+  prev: CatalogActionState,
+  formData: FormData,
+) => Promise<CatalogActionState>;
+
+const nameSchema = z.object({ name: z.string().trim().min(2, "Mínimo 2 caracteres").max(150) });
+
+export async function createBrandAction(
+  _prev: CatalogActionState,
+  formData: FormData,
+): Promise<CatalogActionState> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Sesión expirada" };
+
+  const parsed = nameSchema.safeParse({ name: formData.get("name") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+
+  const [existing] = await db.select({ id: brands.id }).from(brands).where(eq(brands.name, parsed.data.name));
+  if (existing) return { error: "Ya existe una marca con ese nombre" };
+
+  const [row] = await db
+    .insert(brands)
+    .values({ name: parsed.data.name })
+    .returning({ id: brands.id, name: brands.name });
+
+  revalidatePath("/inventario/sensores");
+  return { success: "Marca creada", id: row.id, name: row.name };
+}
+
+export async function createTechnologyAction(
+  _prev: CatalogActionState,
+  formData: FormData,
+): Promise<CatalogActionState> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Sesión expirada" };
+
+  const parsed = nameSchema.safeParse({ name: formData.get("name") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+
+  const [existing] = await db
+    .select({ id: technologies.id })
+    .from(technologies)
+    .where(eq(technologies.name, parsed.data.name));
+  if (existing) return { error: "Ya existe una tecnología con ese nombre" };
+
+  const [row] = await db
+    .insert(technologies)
+    .values({ name: parsed.data.name })
+    .returning({ id: technologies.id, name: technologies.name });
+
+  revalidatePath("/inventario/sensores");
+  return { success: "Tecnología creada", id: row.id, name: row.name };
+}
+
+export async function createProviderAction(
+  _prev: CatalogActionState,
+  formData: FormData,
+): Promise<CatalogActionState> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Sesión expirada" };
+
+  const parsed = nameSchema.safeParse({ name: formData.get("name") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+
+  const [existing] = await db
+    .select({ id: providers.id })
+    .from(providers)
+    .where(eq(providers.name, parsed.data.name));
+  if (existing) return { error: "Ya existe un proveedor con ese nombre" };
+
+  const [row] = await db
+    .insert(providers)
+    .values({ name: parsed.data.name })
+    .returning({ id: providers.id, name: providers.name });
+
+  revalidatePath("/inventario/sensores");
+  return { success: "Proveedor creado", id: row.id, name: row.name };
+}
 
 const sensorSchema = z.object({
   name: z.string().trim().min(2, "Mínimo 2 caracteres").max(200),

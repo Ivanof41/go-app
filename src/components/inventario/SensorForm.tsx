@@ -8,8 +8,9 @@ import {
   createBrandAction,
   createTechnologyAction,
   createProviderAction,
-} from "@/app/(protected)/inventario/catalogo/actions";
-import { createSensorAction, updateSensorAction } from "@/app/(protected)/inventario/sensores/actions";
+  createSensorAction,
+  updateSensorAction,
+} from "@/app/(protected)/inventario/sensores/actions";
 
 type Option = { id: string; name: string };
 

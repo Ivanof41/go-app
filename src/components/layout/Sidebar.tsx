@@ -11,7 +11,6 @@ import {
   ChevronDown,
   CircuitBoard,
   RadioTower,
-  Tags,
   Warehouse,
   type LucideIcon,
 } from "lucide-react";
@@ -33,7 +32,6 @@ const NAV_ITEMS: NavEntry[] = [
     icon: CircuitBoard,
     items: [
       { type: "link", href: "/inventario/sensores", label: "Sensores", icon: RadioTower },
-      { type: "link", href: "/inventario/catalogo", label: "Catálogo", icon: Tags },
       { type: "link", href: "/inventario/zonas", label: "Zonas y stock", icon: Warehouse },
     ],
   },
@@ -75,7 +73,11 @@ function useExpandedGroups(groups: NavGroup[], pathname: string) {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
-  return { expanded, toggle };
+  function expand(id: string) {
+    setExpanded((prev) => ({ ...prev, [id]: true }));
+  }
+
+  return { expanded, toggle, expand };
 }
 
 export function Sidebar() {
@@ -84,7 +86,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   const groups = NAV_ITEMS.filter((e): e is NavGroup => e.type === "group");
-  const { expanded, toggle } = useExpandedGroups(groups, pathname);
+  const { expanded, toggle, expand } = useExpandedGroups(groups, pathname);
 
   useEffect(() => {
     // Lee el estado persistido tras el montaje (localStorage no existe en el servidor,
@@ -139,6 +141,10 @@ export function Sidebar() {
               pathname={pathname}
               isExpanded={!!expanded[entry.id]}
               onToggle={() => toggle(entry.id)}
+              onExpandRequest={() => {
+                setCollapsed(false);
+                expand(entry.id);
+              }}
             />
           ),
         )}
@@ -153,12 +159,14 @@ function SidebarNavGroup({
   pathname,
   isExpanded,
   onToggle,
+  onExpandRequest,
 }: {
   group: NavGroup;
   collapsed: boolean;
   pathname: string;
   isExpanded: boolean;
   onToggle: () => void;
+  onExpandRequest: () => void;
 }) {
   const groupActive = group.items.some((item) => isChildActive(pathname, item.href));
 
@@ -180,7 +188,9 @@ function SidebarNavGroup({
           ref={triggerRef}
           type="button"
           onMouseEnter={handleEnter}
-          aria-label={group.label}
+          onClick={onExpandRequest}
+          aria-label={`Expandir ${group.label}`}
+          title={`Expandir ${group.label}`}
           className="flex w-full items-center justify-center rounded-md px-2.5 py-2"
         >
           <span

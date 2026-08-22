@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { CatalogAction } from "@/components/inventario/CatalogSection";
+import type { CatalogAction } from "@/app/(protected)/inventario/sensores/actions";
 
 export function QuickCreateModal({
   title,
