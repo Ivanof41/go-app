@@ -8,7 +8,7 @@ import { ZoneGrid, type ZoneGridCell } from "@/components/inventario/ZoneGrid";
 import { CellStockModal } from "@/components/inventario/CellStockModal";
 
 type SensorOption = { id: string; name: string; type: string };
-type Zone = { id: string; name: string; rows: number; cols: number; stock: ZoneGridCell[] };
+type Zone = { id: string; name: string; rows: number; cols: number; rowLabels: string[] | null; stock: ZoneGridCell[] };
 
 export function AddStockModal({
   sensorOptions,
@@ -122,8 +122,10 @@ export function AddStockModal({
           <div className="flex flex-col gap-1.5">
             <span className="text-sm font-medium text-c24-navy">Elige una posición vacía</span>
             <ZoneGrid
+              zoneId={zone.id}
               rows={zone.rows}
               cols={zone.cols}
+              rowLabels={zone.rowLabels}
               stock={zone.stock}
               compact
               onCellClick={(row, col, current) => {

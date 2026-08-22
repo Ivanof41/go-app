@@ -7,7 +7,15 @@ import { ManageZonesModal } from "@/components/inventario/ManageZonesModal";
 import { AddStockModal } from "@/components/inventario/AddStockModal";
 import type { ZoneGridCell } from "@/components/inventario/ZoneGrid";
 
-type Zone = { id: string; name: string; location: string | null; rows: number; cols: number; stock: ZoneGridCell[] };
+type Zone = {
+  id: string;
+  name: string;
+  location: string | null;
+  rows: number;
+  cols: number;
+  rowLabels: string[] | null;
+  stock: ZoneGridCell[];
+};
 type SensorOption = { id: string; name: string; type: string };
 
 export function ZonasPageActions({

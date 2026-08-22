@@ -77,6 +77,9 @@ export const zones = pgTable("zones", {
   // mismo número de posiciones — ver docs/features/inventario.md.
   rows: integer("rows").notNull().default(3),
   cols: integer("cols").notNull().default(4),
+  // Nombres opcionales por balda (índice = número de fila, 0-indexado). Un elemento
+  // ausente o vacío ("") significa "sin nombre propio" — se muestra "Balda N" en su lugar.
+  rowLabels: varchar("row_labels", { length: 100 }).array(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

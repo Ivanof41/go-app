@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SensorForm, type SensorFormValues } from "@/components/inventario/SensorForm";
 import { getSensorTypeIcon, getSensorTypeLabel } from "@/lib/inventario/sensor-types";
+import { formatEuro } from "@/lib/inventario/format";
 import { deleteSensorAction } from "@/app/(protected)/inventario/sensores/actions";
 import { clsx } from "@/lib/clsx";
 
@@ -16,12 +17,6 @@ type SensorRow = SensorFormValues & {
   technologyName: string | null;
   providerName: string | null;
 };
-
-const euroFormatter = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
-
-function formatEuro(value: number | null) {
-  return value === null ? "—" : euroFormatter.format(value);
-}
 
 type SortKey = "type" | "name" | "brandName" | "technologyName" | "providerName" | "purchasePrice" | "salePrice";
 
@@ -52,6 +47,7 @@ export function SensorsTable({
   const [isDeleting, startDelete] = useTransition();
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [search, setSearch] = useState("");
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -62,8 +58,18 @@ export function SensorsTable({
     }
   }
 
+  const filteredSensors = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return sensors;
+    return sensors.filter((s) =>
+      [s.name, s.brandName, s.technologyName, s.providerName, getSensorTypeLabel(s.type)]
+        .filter(Boolean)
+        .some((field) => field!.toLowerCase().includes(q)),
+    );
+  }, [sensors, search]);
+
   const sortedSensors = useMemo(() => {
-    const sorted = [...sensors].sort((a, b) => {
+    const sorted = [...filteredSensors].sort((a, b) => {
       let cmp: number;
       if (sortKey === "type") {
         cmp = getSensorTypeLabel(a.type).localeCompare(getSensorTypeLabel(b.type));
@@ -75,7 +81,7 @@ export function SensorsTable({
       return sortDir === "asc" ? cmp : -cmp;
     });
     return sorted;
-  }, [sensors, sortKey, sortDir]);
+  }, [filteredSensors, sortKey, sortDir]);
 
   function handleConfirmDelete() {
     if (!deleteTarget) return;
@@ -94,7 +100,20 @@ export function SensorsTable({
 
   return (
     <div>
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative w-64">
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-c24-text-muted"
+            strokeWidth={1.75}
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar sensor…"
+            className="w-full rounded-md border border-c24-border bg-white py-2.5 pr-3 pl-9 text-sm text-c24-navy placeholder:text-c24-text-muted/60 outline-none transition focus:border-c24-teal focus:ring-2 focus:ring-c24-teal/30"
+          />
+        </div>
         <Button type="button" fullWidth={false} onClick={() => setModalMode("create")}>
           <Plus className="mr-1.5 inline h-4 w-4" strokeWidth={1.75} /> Nuevo sensor
         </Button>
@@ -130,7 +149,7 @@ export function SensorsTable({
             {sortedSensors.map((s) => {
               const TypeIcon = getSensorTypeIcon(s.type);
               return (
-                <tr key={s.id} className="transition hover:bg-c24-teal-light/40">
+                <tr key={s.id} className="transition hover:bg-c24-teal-light">
                   <td className="py-2.5">
                     <span
                       title={getSensorTypeLabel(s.type)}
@@ -173,6 +192,9 @@ export function SensorsTable({
         </table>
       </div>
       {sensors.length === 0 && <p className="mt-4 text-sm text-c24-text-muted">Sin sensores todavía.</p>}
+      {sensors.length > 0 && sortedSensors.length === 0 && (
+        <p className="mt-4 text-sm text-c24-text-muted">Ningún sensor coincide con &ldquo;{search}&rdquo;.</p>
+      )}
 
       {modalMode && (
         <Modal onClose={() => setModalMode(null)} size="xl">

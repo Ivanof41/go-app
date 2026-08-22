@@ -112,6 +112,42 @@ export async function deleteZoneAction(_prev: ActionState, formData: FormData): 
   return { success: "Zona eliminada" };
 }
 
+const renameRowSchema = z.object({
+  zoneId: z.string().uuid("Id inválido"),
+  row: z.coerce.number().int().min(0),
+  label: z.string().trim().max(60, "Máximo 60 caracteres"),
+});
+
+export async function renameZoneRowAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Sesión expirada" };
+
+  const parsed = renameRowSchema.safeParse({
+    zoneId: formData.get("zoneId"),
+    row: formData.get("row"),
+    label: formData.get("label"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+
+  const [zone] = await db
+    .select({ rows: zones.rows, rowLabels: zones.rowLabels })
+    .from(zones)
+    .where(eq(zones.id, parsed.data.zoneId));
+  if (!zone) return { error: "Zona inválida" };
+  if (parsed.data.row >= zone.rows) return { error: "Esa balda ya no existe" };
+
+  // Un elemento vacío ("") significa "sin nombre propio" — no se guarda null dentro
+  // del array para no pelear con el tipo de columna de Drizzle (string[], no (string|null)[]).
+  const labels = [...(zone.rowLabels ?? [])];
+  while (labels.length <= parsed.data.row) labels.push("");
+  labels[parsed.data.row] = parsed.data.label;
+
+  await db.update(zones).set({ rowLabels: labels, updatedAt: new Date() }).where(eq(zones.id, parsed.data.zoneId));
+
+  revalidatePath("/inventario/zonas");
+  return { success: "Balda renombrada" };
+}
+
 // --- Stock ---
 
 const stockSchema = z.object({

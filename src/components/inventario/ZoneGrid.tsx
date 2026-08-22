@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { Pencil } from "lucide-react";
 import { getSensorTypeIcon } from "@/lib/inventario/sensor-types";
+import { renameZoneRowAction } from "@/app/(protected)/inventario/zonas/actions";
 import { clsx } from "@/lib/clsx";
 
 export type ZoneGridCell = {
@@ -15,15 +17,24 @@ export type ZoneGridCell = {
   quantity: number;
 };
 
+function rowLabelFor(rowLabels: string[] | null | undefined, row: number) {
+  const custom = rowLabels?.[row];
+  return custom && custom.trim() ? custom : `Balda ${row + 1}`;
+}
+
 export function ZoneGrid({
+  zoneId,
   rows,
   cols,
+  rowLabels,
   stock,
   onCellClick,
   compact,
 }: {
+  zoneId: string;
   rows: number;
   cols: number;
+  rowLabels?: string[] | null;
   stock: ZoneGridCell[];
   onCellClick: (row: number, col: number, current: ZoneGridCell | null) => void;
   compact?: boolean;
@@ -32,39 +43,125 @@ export function ZoneGrid({
 
   return (
     <div className="overflow-x-auto">
-      <div
-        className="inline-grid gap-2"
-        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-      >
-        {Array.from({ length: rows }).map((_, r) =>
-          Array.from({ length: cols }).map((_, c) => {
-            const current = cellByPosition.get(`${r}-${c}`) ?? null;
-            return (
-              <GridCell
-                key={`${r}-${c}`}
-                row={r}
-                col={c}
-                current={current}
-                compact={compact}
-                onClick={() => onCellClick(r, c, current)}
-              />
-            );
-          }),
-        )}
+      <div className="flex flex-col gap-2">
+        {Array.from({ length: rows }).map((_, r) => (
+          <div key={r} className="flex items-center gap-2">
+            <RowLabel
+              zoneId={zoneId}
+              row={r}
+              label={rowLabels?.[r] ?? ""}
+              editable={!compact}
+              compact={compact}
+            />
+            <div className="flex gap-2">
+              {Array.from({ length: cols }).map((_, c) => {
+                const current = cellByPosition.get(`${r}-${c}`) ?? null;
+                return (
+                  <GridCell
+                    key={c}
+                    col={c}
+                    rowLabel={rowLabelFor(rowLabels, r)}
+                    current={current}
+                    compact={compact}
+                    onClick={() => onCellClick(r, c, current)}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function GridCell({
+function RowLabel({
+  zoneId,
   row,
+  label,
+  editable,
+  compact,
+}: {
+  zoneId: string;
+  row: number;
+  label: string;
+  editable: boolean;
+  compact?: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(label);
+  const [, startTransition] = useTransition();
+  const display = label.trim() ? label : `Balda ${row + 1}`;
+  const widthClass = compact ? "w-16" : "w-24";
+
+  function handleSave() {
+    setEditing(false);
+    const trimmed = value.trim();
+    if (trimmed === label) return;
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("zoneId", zoneId);
+      formData.set("row", String(row));
+      formData.set("label", trimmed);
+      await renameZoneRowAction(undefined, formData);
+    });
+  }
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+          if (e.key === "Escape") {
+            setValue(label);
+            setEditing(false);
+          }
+        }}
+        placeholder={`Balda ${row + 1}`}
+        maxLength={60}
+        className={clsx(
+          "shrink-0 rounded-md border border-c24-teal bg-white px-2 py-1 text-sm text-c24-navy outline-none",
+          widthClass,
+        )}
+      />
+    );
+  }
+
+  if (!editable) {
+    return <span className={clsx("shrink-0 truncate text-sm font-medium text-c24-navy", widthClass)}>{display}</span>;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className={clsx(
+        "group flex shrink-0 items-center gap-1 text-left text-sm font-medium text-c24-navy",
+        widthClass,
+      )}
+    >
+      <span className="truncate">{display}</span>
+      <Pencil
+        className="h-3 w-3 shrink-0 text-c24-text-muted opacity-0 transition group-hover:opacity-100"
+        strokeWidth={1.75}
+      />
+    </button>
+  );
+}
+
+function GridCell({
   col,
+  rowLabel,
   current,
   compact,
   onClick,
 }: {
-  row: number;
   col: number;
+  rowLabel: string;
   current: ZoneGridCell | null;
   compact?: boolean;
   onClick: () => void;
@@ -121,7 +218,7 @@ function GridCell({
               hovered ? "opacity-100" : "opacity-0",
             )}
           >
-            {current ? `${current.sensorName} — ${current.quantity} uds` : `Balda ${row + 1}, posición ${col + 1}`}
+            {current ? `${current.sensorName} — ${current.quantity} uds` : `${rowLabel}, posición ${col + 1}`}
           </span>,
           document.body,
         )}

@@ -15,6 +15,8 @@ export async function getZonesWithStock() {
       sensorId: sensors.id,
       sensorName: sensors.name,
       sensorType: sensors.type,
+      purchasePrice: sensors.purchasePrice,
+      salePrice: sensors.salePrice,
     })
     .from(sensorStock)
     .innerJoin(sensors, eq(sensors.id, sensorStock.sensorId));
