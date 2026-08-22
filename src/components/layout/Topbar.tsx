@@ -15,6 +15,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/ajustes": "Ajustes",
   "/inventario/sensores": "Sensores",
   "/inventario/zonas": "Stock",
+  "/montajes": "Montajes",
 };
 
 export function Topbar({ user }: { user: CurrentUser }) {

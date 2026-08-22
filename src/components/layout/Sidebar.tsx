@@ -7,11 +7,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Gauge,
-  ChevronLeft,
   ChevronDown,
+  ChevronLeft,
   CircuitBoard,
   RadioTower,
   Warehouse,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { clsx } from "@/lib/clsx";
@@ -35,6 +36,7 @@ const NAV_ITEMS: NavEntry[] = [
       { type: "link", href: "/inventario/zonas", label: "Stock", icon: Warehouse },
     ],
   },
+  { type: "link", href: "/montajes", label: "Montajes", icon: Wrench },
 ];
 
 function isChildActive(pathname: string, href: string) {
@@ -73,11 +75,7 @@ function useExpandedGroups(groups: NavGroup[], pathname: string) {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
-  function expand(id: string) {
-    setExpanded((prev) => ({ ...prev, [id]: true }));
-  }
-
-  return { expanded, toggle, expand };
+  return { expanded, toggle };
 }
 
 export function Sidebar() {
@@ -86,7 +84,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   const groups = NAV_ITEMS.filter((e): e is NavGroup => e.type === "group");
-  const { expanded, toggle, expand } = useExpandedGroups(groups, pathname);
+  const { expanded, toggle } = useExpandedGroups(groups, pathname);
 
   useEffect(() => {
     // Lee el estado persistido tras el montaje (localStorage no existe en el servidor,
@@ -141,10 +139,6 @@ export function Sidebar() {
               pathname={pathname}
               isExpanded={!!expanded[entry.id]}
               onToggle={() => toggle(entry.id)}
-              onExpandRequest={() => {
-                setCollapsed(false);
-                expand(entry.id);
-              }}
             />
           ),
         )}
@@ -159,105 +153,69 @@ function SidebarNavGroup({
   pathname,
   isExpanded,
   onToggle,
-  onExpandRequest,
 }: {
   group: NavGroup;
   collapsed: boolean;
   pathname: string;
   isExpanded: boolean;
   onToggle: () => void;
-  onExpandRequest: () => void;
 }) {
   const groupActive = group.items.some((item) => isChildActive(pathname, item.href));
 
   const [hovered, setHovered] = useState(false);
-  const [flyoutPos, setFlyoutPos] = useState<{ top: number; left: number } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   function handleEnter() {
     if (!collapsed) return;
     const box = triggerRef.current?.getBoundingClientRect();
-    if (box) setFlyoutPos({ top: box.top, left: box.right + 12 });
+    if (box) setTooltipPos({ top: box.top + box.height / 2, left: box.right + 12 });
     setHovered(true);
-  }
-
-  if (collapsed) {
-    return (
-      <div onMouseLeave={() => setHovered(false)}>
-        <button
-          ref={triggerRef}
-          type="button"
-          onMouseEnter={handleEnter}
-          onClick={onExpandRequest}
-          aria-label={`Expandir ${group.label}`}
-          title={`Expandir ${group.label}`}
-          className="flex w-full items-center justify-center rounded-md px-2.5 py-2"
-        >
-          <span
-            className={clsx(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
-              groupActive && "bg-c24-teal-light",
-            )}
-          >
-            <group.icon className="h-[18px] w-[18px]" strokeWidth={groupActive ? 2 : 1.75} />
-          </span>
-        </button>
-
-        {flyoutPos &&
-          typeof document !== "undefined" &&
-          createPortal(
-            <div
-              style={{ top: flyoutPos.top, left: flyoutPos.left }}
-              onMouseEnter={() => setHovered(true)}
-              onMouseLeave={() => setHovered(false)}
-              className={clsx(
-                "fixed z-50 flex flex-col gap-0.5 rounded-md bg-c24-navy p-1 shadow-lg transition-all duration-150",
-                hovered
-                  ? "pointer-events-auto translate-x-0 opacity-100"
-                  : "pointer-events-none -translate-x-1 opacity-0",
-              )}
-            >
-              {group.items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={clsx(
-                    "whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium text-white transition-colors",
-                    isChildActive(pathname, item.href) ? "bg-white/10" : "hover:bg-white/10",
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>,
-            document.body,
-          )}
-      </div>
-    );
   }
 
   return (
     <div>
       <button
+        ref={triggerRef}
         type="button"
         onClick={onToggle}
-        className="group flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium text-c24-text-muted transition-colors hover:text-c24-navy"
+        onMouseEnter={handleEnter}
+        onMouseLeave={() => setHovered(false)}
+        aria-label={group.label}
+        className={clsx(
+          "flex w-full items-center rounded-md py-2 text-sm transition-colors",
+          collapsed ? "justify-center px-2.5" : "gap-3 px-2.5",
+          groupActive
+            ? "bg-c24-teal-light font-semibold text-c24-navy"
+            : "font-medium text-c24-text-muted hover:text-c24-navy",
+        )}
       >
-        <span
-          className={clsx(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
-            groupActive && "bg-c24-teal-light",
-          )}
-        >
-          <group.icon className="h-[18px] w-[18px]" strokeWidth={groupActive ? 2 : 1.75} />
-        </span>
-        <span className={clsx("flex-1 text-left", groupActive && "font-semibold text-c24-navy")}>
-          {group.label}
-        </span>
-        <ChevronDown
-          className={clsx("h-4 w-4 shrink-0 transition-transform", isExpanded && "rotate-180")}
-        />
+        <group.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={groupActive ? 2 : 1.75} />
+        {!collapsed && (
+          <>
+            <span className="flex-1 text-left">{group.label}</span>
+            <ChevronDown
+              className={clsx("h-4 w-4 shrink-0 transition-transform", isExpanded && "rotate-180")}
+            />
+          </>
+        )}
       </button>
+
+      {collapsed &&
+        tooltipPos &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <span
+            style={{ top: tooltipPos.top, left: tooltipPos.left }}
+            className={clsx(
+              "pointer-events-none fixed z-50 -translate-y-1/2 whitespace-nowrap rounded-md bg-c24-navy px-2.5 py-1.5 text-xs font-medium text-white shadow-lg transition-all duration-150",
+              hovered ? "translate-x-0 opacity-100" : "-translate-x-1 opacity-0",
+            )}
+          >
+            {group.label}
+          </span>,
+          document.body,
+        )}
 
       <div
         className={clsx(
@@ -265,7 +223,7 @@ function SidebarNavGroup({
           isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
         )}
       >
-        <div className="flex min-h-0 flex-col gap-1 overflow-hidden">
+        <div className="flex min-h-0 flex-col gap-1 overflow-hidden pt-1">
           {group.items.map((item) => (
             <SidebarNavItem
               key={item.href}
@@ -273,7 +231,7 @@ function SidebarNavGroup({
               label={item.label}
               icon={item.icon}
               active={isChildActive(pathname, item.href)}
-              collapsed={false}
+              collapsed={collapsed}
               nested
             />
           ))}
@@ -317,38 +275,25 @@ function SidebarNavItem({
         onMouseEnter={handleEnter}
         onMouseLeave={() => setHovered(false)}
         className={clsx(
-          "group flex items-center rounded-md py-2 text-sm transition-colors",
-          nested ? "ml-2 border-l border-c24-border pl-3" : "px-2.5",
+          "flex items-center rounded-md py-2 text-sm transition-colors",
+          nested && !collapsed ? "ml-2 border-l border-c24-border pl-3" : "px-2.5",
           collapsed ? "justify-center" : "gap-3",
           active
-            ? "font-semibold text-c24-navy"
+            ? "bg-c24-teal-light font-semibold text-c24-navy"
             : "font-medium text-c24-text-muted hover:text-c24-navy",
         )}
       >
-        <span
-          className={clsx(
-            "flex shrink-0 items-center justify-center rounded-md transition-colors",
-            nested ? "h-7 w-7" : "h-8 w-8",
-            active && "bg-c24-teal-light",
-          )}
-        >
-          <Icon className={nested ? "h-4 w-4" : "h-[18px] w-[18px]"} strokeWidth={active ? 2 : 1.75} />
-        </span>
+        <Icon
+          className={clsx("shrink-0", nested ? "h-4 w-4" : "h-[18px] w-[18px]")}
+          strokeWidth={active ? 2 : 1.75}
+        />
         <span
           className={clsx(
             "overflow-hidden whitespace-nowrap transition-all duration-300",
             collapsed ? "w-0 opacity-0" : "w-auto opacity-100",
           )}
         >
-          <span className="relative inline-block pb-1">
-            {label}
-            <span
-              className={clsx(
-                "absolute bottom-0 left-0 h-[1.5px] rounded-full bg-c24-teal transition-all duration-300",
-                active ? "w-full" : "w-0 group-hover:w-full",
-              )}
-            />
-          </span>
+          {label}
         </span>
       </Link>
 
