@@ -119,6 +119,7 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
         </button>
       </div>
 
+      <div className="min-h-[280px]">
       {tab === "create" && (
         <div className="mt-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -300,6 +301,7 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
           </table>
         </div>
         ))}
+      </div>
 
       <div className="mt-4 flex justify-end">
         <Button type="button" variant="ghost" fullWidth={false} className="w-36" onClick={onClose}>
