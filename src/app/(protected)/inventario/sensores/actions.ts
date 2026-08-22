@@ -95,14 +95,24 @@ export async function createProviderAction(
   return { success: "Proveedor creado", id: row.id, name: row.name };
 }
 
+// Marca/Tecnología/Proveedor/precios son opcionales: solo nombre + tipo son
+// obligatorios para crear un sensor. Un <select> sin elegir nada llega como "" en el
+// FormData, así que se normaliza a null antes de validar el formato real (uuid/número).
+const emptyToNull = (v: unknown) => (typeof v === "string" && v.trim() === "" ? null : v);
+const optionalUuid = z.preprocess(emptyToNull, z.string().uuid("Selección inválida").nullable());
+const optionalPrice = z.preprocess(
+  emptyToNull,
+  z.union([z.coerce.number().positive("El precio debe ser mayor a 0"), z.null()]),
+);
+
 const sensorSchema = z.object({
   name: z.string().trim().min(2, "Mínimo 2 caracteres").max(200),
   type: z.enum(SENSOR_TYPE_VALUES, { message: "Selecciona un tipo de sensor" }),
-  brandId: z.string().uuid("Selecciona una marca"),
-  technologyId: z.string().uuid("Selecciona una tecnología"),
-  providerId: z.string().uuid("Selecciona un proveedor"),
-  purchasePrice: z.coerce.number().positive("El precio de compra debe ser mayor a 0"),
-  salePrice: z.coerce.number().positive("El precio de venta debe ser mayor a 0"),
+  brandId: optionalUuid,
+  technologyId: optionalUuid,
+  providerId: optionalUuid,
+  purchasePrice: optionalPrice,
+  salePrice: optionalPrice,
   notes: z.string().trim().max(1000).optional(),
 });
 

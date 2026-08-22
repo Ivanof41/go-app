@@ -37,8 +37,8 @@ export async function listSensors() {
       notes: sensors.notes,
     })
     .from(sensors)
-    .innerJoin(brands, eq(sensors.brandId, brands.id))
-    .innerJoin(technologies, eq(sensors.technologyId, technologies.id))
-    .innerJoin(providers, eq(sensors.providerId, providers.id))
+    .leftJoin(brands, eq(sensors.brandId, brands.id))
+    .leftJoin(technologies, eq(sensors.technologyId, technologies.id))
+    .leftJoin(providers, eq(sensors.providerId, providers.id))
     .orderBy(asc(sensors.name));
 }

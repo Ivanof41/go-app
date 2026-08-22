@@ -6,13 +6,14 @@ import { clsx } from "@/lib/clsx";
 type ModalProps = {
   onClose: () => void;
   children: ReactNode;
-  size?: "sm" | "lg" | "xl";
+  size?: "sm" | "lg" | "xl" | "2xl";
 };
 
 const SIZES = {
   sm: "max-w-sm",
   lg: "max-w-lg",
   xl: "max-w-2xl",
+  "2xl": "max-w-4xl",
 } as const;
 
 export function Modal({ onClose, children, size = "sm" }: ModalProps) {

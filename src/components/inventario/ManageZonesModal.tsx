@@ -6,6 +6,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { clsx } from "@/lib/clsx";
 import {
   createZoneAction,
   updateZoneAction,
@@ -15,6 +16,7 @@ import {
 type Zone = { id: string; name: string; location: string | null; rows: number; cols: number };
 
 export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: () => void }) {
+  const [tab, setTab] = useState<"create" | "manage">("create");
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [newRows, setNewRows] = useState("3");
@@ -52,6 +54,7 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
       setNewLocation("");
       setNewRows("3");
       setNewCols("4");
+      setTab("manage");
     });
   }
 
@@ -90,13 +93,35 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
   }
 
   return (
-    <Modal onClose={onClose} size="xl">
+    <Modal onClose={onClose} size="2xl">
       <h3 className="text-base font-semibold text-c24-navy">Gestionar zonas</h3>
 
-      <div className="mt-4 rounded-md border border-c24-border p-4">
-        <h4 className="text-sm font-semibold text-c24-navy">Nueva zona</h4>
+      <div className="mt-4 flex w-fit rounded-md border border-c24-border p-1">
+        <button
+          type="button"
+          onClick={() => setTab("create")}
+          className={clsx(
+            "rounded-md px-4 py-1.5 text-sm font-medium transition",
+            tab === "create" ? "bg-c24-navy text-white" : "text-c24-text-muted hover:text-c24-navy",
+          )}
+        >
+          Crear zona
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("manage")}
+          className={clsx(
+            "rounded-md px-4 py-1.5 text-sm font-medium transition",
+            tab === "manage" ? "bg-c24-navy text-white" : "text-c24-text-muted hover:text-c24-navy",
+          )}
+        >
+          Zonas existentes ({zones.length})
+        </button>
+      </div>
 
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {tab === "create" && (
+        <div className="mt-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="new-name" className="text-sm font-medium text-c24-navy">
               Nombre
@@ -159,14 +184,14 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
             {isCreating ? "Agregando…" : "Agregar zona"}
           </Button>
         </div>
-      </div>
+        </div>
+      )}
 
-      <h4 className="mt-6 text-sm font-semibold text-c24-navy">Zonas existentes</h4>
-
-      {zones.length === 0 ? (
-        <p className="mt-2 text-sm text-c24-text-muted">Sin zonas todavía</p>
-      ) : (
-        <div className="mt-2 overflow-x-auto">
+      {tab === "manage" &&
+        (zones.length === 0 ? (
+          <p className="mt-4 text-sm text-c24-text-muted">Sin zonas todavía</p>
+        ) : (
+        <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-c24-border text-left text-c24-text-muted">
@@ -268,7 +293,7 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
             </tbody>
           </table>
         </div>
-      )}
+        ))}
 
       <div className="mt-4 flex justify-end">
         <Button type="button" variant="ghost" fullWidth={false} onClick={onClose}>

@@ -22,11 +22,11 @@ export type SensorFormValues = {
   // string (no SensorTypeValue): la lista de íconos en sensor-types.ts puede crecer o
   // perder valores, y un sensor viejo puede conservar un "type" que ya no está en la lista.
   type: string;
-  brandId: string;
-  technologyId: string;
-  providerId: string;
-  purchasePrice: number;
-  salePrice: number;
+  brandId: string | null;
+  technologyId: string | null;
+  providerId: string | null;
+  purchasePrice: number | null;
+  salePrice: number | null;
   notes: string | null;
 };
 
@@ -86,7 +86,7 @@ export function SensorForm({
           name="brandId"
           label="Marca"
           initialOptions={brands}
-          defaultValue={sensor?.brandId}
+          defaultValue={sensor?.brandId ?? undefined}
           createAction={createBrandAction}
           createModalTitle="Nueva marca"
         />
@@ -94,7 +94,7 @@ export function SensorForm({
           name="technologyId"
           label="Tecnología"
           initialOptions={technologies}
-          defaultValue={sensor?.technologyId}
+          defaultValue={sensor?.technologyId ?? undefined}
           createAction={createTechnologyAction}
           createModalTitle="Nueva tecnología"
         />
@@ -102,7 +102,7 @@ export function SensorForm({
           name="providerId"
           label="Proveedor"
           initialOptions={providers}
-          defaultValue={sensor?.providerId}
+          defaultValue={sensor?.providerId ?? undefined}
           createAction={createProviderAction}
           createModalTitle="Nuevo proveedor"
         />
@@ -111,7 +111,7 @@ export function SensorForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="purchasePrice" className="text-sm font-medium text-c24-navy">
-            Precio compra
+            Precio compra (€)
           </label>
           <Input
             id="purchasePrice"
@@ -119,13 +119,12 @@ export function SensorForm({
             type="number"
             step="0.01"
             min="0"
-            defaultValue={sensor?.purchasePrice}
-            required
+            defaultValue={sensor?.purchasePrice ?? undefined}
           />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="salePrice" className="text-sm font-medium text-c24-navy">
-            Precio venta
+            Precio venta (€)
           </label>
           <Input
             id="salePrice"
@@ -133,8 +132,7 @@ export function SensorForm({
             type="number"
             step="0.01"
             min="0"
-            defaultValue={sensor?.salePrice}
-            required
+            defaultValue={sensor?.salePrice ?? undefined}
           />
         </div>
       </div>

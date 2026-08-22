@@ -14,7 +14,7 @@ export function ZoneCard({ zone, sensorOptions }: { zone: Zone; sensorOptions: S
   );
 
   return (
-    <Card title={zone.name} className="flex flex-col gap-3">
+    <Card title={zone.name} className="flex w-fit flex-col gap-3">
       {zone.location && <p className="text-xs text-c24-text-muted">{zone.location}</p>}
 
       <ZoneGrid

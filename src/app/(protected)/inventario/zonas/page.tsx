@@ -27,7 +27,7 @@ export default async function ZonasPage() {
           <p className="text-sm text-c24-text-muted">Aún no hay zonas creadas</p>
         </Card>
       ) : (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 flex flex-wrap items-start gap-4">
           {zones.map((zone) => (
             <ZoneCard key={zone.id} zone={zone} sensorOptions={sensorOptions} />
           ))}

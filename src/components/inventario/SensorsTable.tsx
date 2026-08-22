@@ -1,20 +1,39 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SensorForm, type SensorFormValues } from "@/components/inventario/SensorForm";
 import { getSensorTypeIcon, getSensorTypeLabel } from "@/lib/inventario/sensor-types";
 import { deleteSensorAction } from "@/app/(protected)/inventario/sensores/actions";
+import { clsx } from "@/lib/clsx";
 
 type Option = { id: string; name: string };
 type SensorRow = SensorFormValues & {
-  brandName: string;
-  technologyName: string;
-  providerName: string;
+  brandName: string | null;
+  technologyName: string | null;
+  providerName: string | null;
 };
+
+const euroFormatter = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+
+function formatEuro(value: number | null) {
+  return value === null ? "—" : euroFormatter.format(value);
+}
+
+type SortKey = "type" | "name" | "brandName" | "technologyName" | "providerName" | "purchasePrice" | "salePrice";
+
+const COLUMNS: { key: SortKey; label: string }[] = [
+  { key: "type", label: "Tipo" },
+  { key: "name", label: "Nombre" },
+  { key: "brandName", label: "Marca" },
+  { key: "technologyName", label: "Tecnología" },
+  { key: "providerName", label: "Proveedor" },
+  { key: "purchasePrice", label: "P. compra" },
+  { key: "salePrice", label: "P. venta" },
+];
 
 export function SensorsTable({
   sensors,
@@ -31,6 +50,32 @@ export function SensorsTable({
   const [deleteTarget, setDeleteTarget] = useState<SensorRow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDelete] = useTransition();
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function toggleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const sortedSensors = useMemo(() => {
+    const sorted = [...sensors].sort((a, b) => {
+      let cmp: number;
+      if (sortKey === "type") {
+        cmp = getSensorTypeLabel(a.type).localeCompare(getSensorTypeLabel(b.type));
+      } else if (sortKey === "purchasePrice" || sortKey === "salePrice") {
+        cmp = (a[sortKey] ?? -Infinity) - (b[sortKey] ?? -Infinity);
+      } else {
+        cmp = (a[sortKey] ?? "").localeCompare(b[sortKey] ?? "");
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [sensors, sortKey, sortDir]);
 
   function handleConfirmDelete() {
     if (!deleteTarget) return;
@@ -59,57 +104,69 @@ export function SensorsTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-c24-border text-left text-c24-text-muted">
-              <th className="py-2 font-medium">Tipo</th>
-              <th className="py-2 font-medium">Nombre</th>
-              <th className="py-2 font-medium">Marca</th>
-              <th className="py-2 font-medium">Tecnología</th>
-              <th className="py-2 font-medium">Proveedor</th>
-              <th className="py-2 font-medium">P. compra</th>
-              <th className="py-2 font-medium">P. venta</th>
+              {COLUMNS.map((col) => {
+                const active = sortKey === col.key;
+                const SortIcon = active ? (sortDir === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
+                return (
+                  <th key={col.key} className="py-2 font-medium">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort(col.key)}
+                      className={clsx(
+                        "flex items-center gap-1 transition hover:text-c24-navy",
+                        active && "text-c24-navy",
+                      )}
+                    >
+                      {col.label}
+                      <SortIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    </button>
+                  </th>
+                );
+              })}
               <th className="py-2" />
             </tr>
           </thead>
           <tbody className="divide-y divide-c24-border">
-            {sensors.map((s) => {
+            {sortedSensors.map((s) => {
               const TypeIcon = getSensorTypeIcon(s.type);
               return (
-              <tr key={s.id}>
-                <td className="py-2.5">
-                  <span
-                    title={getSensorTypeLabel(s.type)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-c24-teal-light text-c24-navy"
-                  >
-                    <TypeIcon className="h-4 w-4" strokeWidth={1.75} />
-                  </span>
-                </td>
-                <td className="py-2.5 text-c24-navy">{s.name}</td>
-                <td className="py-2.5 text-c24-navy">{s.brandName}</td>
-                <td className="py-2.5 text-c24-navy">{s.technologyName}</td>
-                <td className="py-2.5 text-c24-navy">{s.providerName}</td>
-                <td className="py-2.5 text-c24-navy">${s.purchasePrice.toFixed(2)}</td>
-                <td className="py-2.5 text-c24-navy">${s.salePrice.toFixed(2)}</td>
-                <td className="py-2.5 text-right whitespace-nowrap">
-                  <button
-                    type="button"
-                    aria-label="Editar"
-                    onClick={() => setModalMode(s)}
-                    className="p-1.5 text-c24-text-muted hover:text-c24-navy"
-                  >
-                    <Pencil className="h-4 w-4" strokeWidth={1.75} />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Eliminar"
-                    onClick={() => {
-                      setDeleteTarget(s);
-                      setDeleteError(null);
-                    }}
-                    className="p-1.5 text-c24-text-muted hover:text-c24-danger"
-                  >
-                    <Trash2 className="h-4 w-4" strokeWidth={1.75} />
-                  </button>
-                </td>
-              </tr>
+                <tr key={s.id} className="transition hover:bg-c24-teal-light/40">
+                  <td className="py-2.5">
+                    <span
+                      title={getSensorTypeLabel(s.type)}
+                      className="flex h-7 w-7 items-center justify-center rounded-md bg-c24-teal-light text-c24-navy"
+                    >
+                      <TypeIcon className="h-4 w-4" strokeWidth={1.75} />
+                    </span>
+                  </td>
+                  <td className="py-2.5 text-c24-navy">{s.name}</td>
+                  <td className="py-2.5 text-c24-navy">{s.brandName ?? "—"}</td>
+                  <td className="py-2.5 text-c24-navy">{s.technologyName ?? "—"}</td>
+                  <td className="py-2.5 text-c24-navy">{s.providerName ?? "—"}</td>
+                  <td className="py-2.5 text-c24-navy">{formatEuro(s.purchasePrice)}</td>
+                  <td className="py-2.5 text-c24-navy">{formatEuro(s.salePrice)}</td>
+                  <td className="py-2.5 text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      aria-label="Editar"
+                      onClick={() => setModalMode(s)}
+                      className="p-1.5 text-c24-text-muted hover:text-c24-navy"
+                    >
+                      <Pencil className="h-4 w-4" strokeWidth={1.75} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Eliminar"
+                      onClick={() => {
+                        setDeleteTarget(s);
+                        setDeleteError(null);
+                      }}
+                      className="p-1.5 text-c24-text-muted hover:text-c24-danger"
+                    >
+                      <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+                    </button>
+                  </td>
+                </tr>
               );
             })}
           </tbody>

@@ -55,17 +55,13 @@ export const sensors = pgTable("sensors", {
   // crece seguido a pedido del usuario, y un enum de Postgres exige una migración por
   // cada valor nuevo. La validación del valor vive solo en Zod (sensorSchema).
   type: varchar("type", { length: 60 }).notNull().default("otro"),
-  brandId: uuid("brand_id")
-    .notNull()
-    .references(() => brands.id, { onDelete: "restrict" }),
-  technologyId: uuid("technology_id")
-    .notNull()
-    .references(() => technologies.id, { onDelete: "restrict" }),
-  providerId: uuid("provider_id")
-    .notNull()
-    .references(() => providers.id, { onDelete: "restrict" }),
-  purchasePrice: numeric("purchase_price", { precision: 10, scale: 2, mode: "number" }).notNull(),
-  salePrice: numeric("sale_price", { precision: 10, scale: 2, mode: "number" }).notNull(),
+  // Marca/tecnología/proveedor/precios son opcionales a propósito: nombre + tipo
+  // alcanzan para crear un sensor, el resto se puede completar después.
+  brandId: uuid("brand_id").references(() => brands.id, { onDelete: "restrict" }),
+  technologyId: uuid("technology_id").references(() => technologies.id, { onDelete: "restrict" }),
+  providerId: uuid("provider_id").references(() => providers.id, { onDelete: "restrict" }),
+  purchasePrice: numeric("purchase_price", { precision: 10, scale: 2, mode: "number" }),
+  salePrice: numeric("sale_price", { precision: 10, scale: 2, mode: "number" }),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
