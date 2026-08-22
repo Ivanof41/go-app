@@ -105,9 +105,9 @@ export function Sidebar() {
         collapsed ? "w-16" : "w-48",
       )}
     >
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-c24-teal/40 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-c24-teal/60 to-transparent" />
 
-      <div className="flex h-16 items-center justify-center border-b border-c24-border">
+      <div className="flex h-16 items-center justify-center">
         <Image src="/LogoOnlyGo.png" alt="Go!" width={26} height={17} />
       </div>
 
@@ -275,8 +275,7 @@ function SidebarNavItem({
         onMouseEnter={handleEnter}
         onMouseLeave={() => setHovered(false)}
         className={clsx(
-          "flex items-center rounded-md py-2 text-sm transition-colors",
-          nested && !collapsed ? "ml-2 border-l border-c24-border pl-3" : "px-2.5",
+          "flex items-center rounded-md px-2.5 py-2 text-sm transition-colors",
           collapsed ? "justify-center" : "gap-3",
           active
             ? "bg-c24-teal-light font-semibold text-c24-navy"

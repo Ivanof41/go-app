@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ChevronDown, LogOut, Settings } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Clock } from "@/components/layout/Clock";
@@ -10,19 +9,9 @@ import { signOutAction } from "@/app/(protected)/actions";
 import { clsx } from "@/lib/clsx";
 import type { CurrentUser } from "@/lib/current-user";
 
-const PAGE_TITLES: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/ajustes": "Ajustes",
-  "/inventario/sensores": "Sensores",
-  "/inventario/zonas": "Stock",
-  "/montajes": "Montajes",
-};
-
 export function Topbar({ user }: { user: CurrentUser }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
-  const title = PAGE_TITLES[pathname] ?? "Go!";
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -40,10 +29,8 @@ export function Topbar({ user }: { user: CurrentUser }) {
   }, []);
 
   return (
-    <header className="relative flex h-16 items-center justify-between bg-white px-6 shadow-[0_4px_24px_-8px_rgba(0,60,91,0.15)]">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-c24-teal/40 to-transparent" />
-
-      <h2 className="text-sm font-semibold text-c24-navy">{title}</h2>
+    <header className="relative flex h-16 items-center justify-end bg-white px-6 shadow-[0_4px_24px_-8px_rgba(0,60,91,0.15)]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-c24-teal/60 to-transparent" />
 
       <div className="flex items-center gap-4">
         <Clock />
