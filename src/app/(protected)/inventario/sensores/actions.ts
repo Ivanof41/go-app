@@ -6,6 +6,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { brands, providers, sensors, sensorStock, technologies } from "@/db/schema";
+import { SENSOR_TYPE_VALUES } from "@/lib/inventario/sensor-types";
 
 export type ActionState = { error?: string; success?: string } | undefined;
 
@@ -96,6 +97,7 @@ export async function createProviderAction(
 
 const sensorSchema = z.object({
   name: z.string().trim().min(2, "Mínimo 2 caracteres").max(200),
+  type: z.enum(SENSOR_TYPE_VALUES, { message: "Selecciona un tipo de sensor" }),
   brandId: z.string().uuid("Selecciona una marca"),
   technologyId: z.string().uuid("Selecciona una tecnología"),
   providerId: z.string().uuid("Selecciona un proveedor"),
@@ -110,6 +112,7 @@ export async function createSensorAction(_prev: ActionState, formData: FormData)
 
   const parsed = sensorSchema.safeParse({
     name: formData.get("name"),
+    type: formData.get("type"),
     brandId: formData.get("brandId"),
     technologyId: formData.get("technologyId"),
     providerId: formData.get("providerId"),
@@ -134,6 +137,7 @@ export async function updateSensorAction(_prev: ActionState, formData: FormData)
   const parsed = sensorUpdateSchema.safeParse({
     id: formData.get("id"),
     name: formData.get("name"),
+    type: formData.get("type"),
     brandId: formData.get("brandId"),
     technologyId: formData.get("technologyId"),
     providerId: formData.get("providerId"),

@@ -1,0 +1,2 @@
+CREATE TYPE "public"."sensor_type" AS ENUM('presion', 'electricidad', 'consumo_agua', 'temperatura', 'pasarela_lorawan', 'nivel_agua', 'calidad_aire', 'otro');--> statement-breakpoint
+ALTER TABLE "sensors" ADD COLUMN "type" "sensor_type" DEFAULT 'otro' NOT NULL;

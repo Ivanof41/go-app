@@ -25,6 +25,7 @@ export async function listSensors() {
     .select({
       id: sensors.id,
       name: sensors.name,
+      type: sensors.type,
       brandId: sensors.brandId,
       technologyId: sensors.technologyId,
       providerId: sensors.providerId,

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SensorForm, type SensorFormValues } from "@/components/inventario/SensorForm";
+import { getSensorTypeIcon, getSensorTypeLabel } from "@/lib/inventario/sensor-types";
 import { deleteSensorAction } from "@/app/(protected)/inventario/sensores/actions";
 
 type Option = { id: string; name: string };
@@ -58,6 +59,7 @@ export function SensorsTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-c24-border text-left text-c24-text-muted">
+              <th className="py-2 font-medium">Tipo</th>
               <th className="py-2 font-medium">Nombre</th>
               <th className="py-2 font-medium">Marca</th>
               <th className="py-2 font-medium">Tecnología</th>
@@ -68,8 +70,18 @@ export function SensorsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-c24-border">
-            {sensors.map((s) => (
+            {sensors.map((s) => {
+              const TypeIcon = getSensorTypeIcon(s.type);
+              return (
               <tr key={s.id}>
+                <td className="py-2.5">
+                  <span
+                    title={getSensorTypeLabel(s.type)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md bg-c24-teal-light text-c24-navy"
+                  >
+                    <TypeIcon className="h-4 w-4" strokeWidth={1.75} />
+                  </span>
+                </td>
                 <td className="py-2.5 text-c24-navy">{s.name}</td>
                 <td className="py-2.5 text-c24-navy">{s.brandName}</td>
                 <td className="py-2.5 text-c24-navy">{s.technologyName}</td>
@@ -98,7 +110,8 @@ export function SensorsTable({
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -106,11 +119,9 @@ export function SensorsTable({
 
       {modalMode && (
         <Modal onClose={() => setModalMode(null)} size="lg">
-          <h3 className="mb-4 text-base font-semibold text-c24-navy">
-            {modalMode === "create" ? "Nuevo sensor" : "Editar sensor"}
-          </h3>
           <SensorForm
             sensor={modalMode === "create" ? undefined : modalMode}
+            title={modalMode === "create" ? "Nuevo sensor" : "Editar sensor"}
             brands={brands}
             technologies={technologies}
             providers={providers}

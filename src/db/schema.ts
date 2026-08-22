@@ -14,6 +14,17 @@ import {
 
 export const userRole = pgEnum("user_role", ["admin", "user"]);
 
+export const sensorType = pgEnum("sensor_type", [
+  "presion",
+  "electricidad",
+  "consumo_agua",
+  "temperatura",
+  "pasarela_lorawan",
+  "nivel_agua",
+  "calidad_aire",
+  "otro",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -51,6 +62,7 @@ export const providers = pgTable("providers", {
 export const sensors = pgTable("sensors", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 200 }).notNull(),
+  type: sensorType("type").notNull().default("otro"),
   brandId: uuid("brand_id")
     .notNull()
     .references(() => brands.id, { onDelete: "restrict" }),

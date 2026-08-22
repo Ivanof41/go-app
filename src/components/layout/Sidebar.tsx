@@ -107,7 +107,7 @@ export function Sidebar() {
     >
       <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-c24-teal/60 to-transparent" />
 
-      <div className="flex h-16 items-center justify-center">
+      <div className="flex h-16 items-center justify-center border-b border-c24-border">
         <Image src="/LogoOnlyGo.png" alt="Go!" width={26} height={17} />
       </div>
 
@@ -115,7 +115,7 @@ export function Sidebar() {
         type="button"
         onClick={() => setCollapsed((v) => !v)}
         aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
-        className="flex h-9 items-center justify-center border-b border-c24-border text-c24-text-muted transition hover:text-c24-navy"
+        className="flex h-9 items-center justify-center text-c24-text-muted transition hover:text-c24-navy"
       >
         <ChevronLeft className={clsx("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
       </button>
