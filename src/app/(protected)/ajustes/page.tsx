@@ -10,7 +10,7 @@ export default async function AjustesPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10">
+    <div className="px-6 py-10">
       <h1 className="text-2xl font-semibold text-c24-navy">Ajustes</h1>
       <p className="mt-1 text-sm text-c24-text-muted">Gestiona tu perfil y tu contraseña.</p>
 

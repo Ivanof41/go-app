@@ -49,6 +49,10 @@ Confirmación destructiva genérica sobre `Modal`: título, descripción opciona
 ### `Avatar`
 Imagen circular si hay `src` (data URL), o iniciales sobre fondo teal si no. Tamaños `sm`/`md`/`lg`.
 
+## `c24-teal-light` como fondo de página vs. como color de hover/resaltado
+
+`ProtectedLayout` (`src/app/(protected)/layout.tsx`) pone `bg-c24-teal-light` en el `<div>` raíz que envuelve Sidebar + Topbar + `<main>` — es el fondo de **toda** página protegida que no esté envuelta en su propia `Card` blanca. Esto importa porque `c24-teal-light` es también el color que se usa en todos lados para "resaltado/hover" (ítems del Sidebar, filas activas, etc.). Un `hover:bg-c24-teal-light` en un elemento que vive directo sobre el fondo de la página (sin un `Card` blanco de por medio) **no se va a ver** — el color del hover y el del fondo son literalmente el mismo, sin importar la opacidad que se le ponga (`/40`, `/60`, etc. tampoco arreglan esto, solo lo hacen más tenue todavía). Pasó con las filas de `SensorsTable`, que no está envuelta en un `Card`: la solución fue usar `hover:bg-white`, que sí contrasta contra el fondo teal-claro de la página. Antes de usar `c24-teal-light` como color de hover/resaltado, confirmar que el elemento vive sobre un fondo blanco (`Card`, `Modal`), no directo sobre el fondo de `<main>`.
+
 ## La trampa de las clases Tailwind conflictivas
 
 Ya nos mordió tres veces (`Button.fullWidth`, `Card` con `dashed`, el flyout del Sidebar): si dos utilidades del **mismo eje** (`w-*`, `max-w-*`, `bg-*`, `pointer-events-*`) aparecen juntas en una cadena de clases — una fija y otra condicional — el resultado no se resuelve por orden de aparición en el JSX, sino por el orden interno en que Tailwind genera el CSS. Es decir: **nunca poner el valor base y su override condicional como dos clases separadas del mismo eje**; usar siempre un ternario exclusivo (`condición ? "clase-a" : "clase-b"`) o una prop dedicada del componente (`fullWidth`, `size`, `dashed`).

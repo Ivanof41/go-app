@@ -180,7 +180,13 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
         )}
 
         <div className="mt-3 flex justify-end">
-          <Button type="button" fullWidth={false} disabled={isCreating || !newName.trim()} onClick={handleCreate}>
+          <Button
+            type="button"
+            fullWidth={false}
+            className="w-36"
+            disabled={isCreating || !newName.trim()}
+            onClick={handleCreate}
+          >
             {isCreating ? "Agregando…" : "Agregar zona"}
           </Button>
         </div>
@@ -296,7 +302,7 @@ export function ManageZonesModal({ zones, onClose }: { zones: Zone[]; onClose: (
         ))}
 
       <div className="mt-4 flex justify-end">
-        <Button type="button" variant="ghost" fullWidth={false} onClick={onClose}>
+        <Button type="button" variant="ghost" fullWidth={false} className="w-36" onClick={onClose}>
           Cerrar
         </Button>
       </div>

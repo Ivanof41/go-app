@@ -149,7 +149,7 @@ export function SensorsTable({
             {sortedSensors.map((s) => {
               const TypeIcon = getSensorTypeIcon(s.type);
               return (
-                <tr key={s.id} className="transition hover:bg-c24-teal-light">
+                <tr key={s.id} className="transition hover:bg-white">
                   <td className="py-2.5">
                     <span
                       title={getSensorTypeLabel(s.type)}

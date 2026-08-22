@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 import { updateProfileAction } from "@/app/(protected)/ajustes/actions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -13,9 +13,10 @@ export function ProfileForm({
   defaultEmail: string;
 }) {
   const [state, formAction, isPending] = useActionState(updateProfileAction, undefined);
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm font-medium text-c24-navy">
           Nombre
@@ -40,9 +41,20 @@ export function ProfileForm({
         </p>
       )}
 
-      <Button type="submit" disabled={isPending}>
-        {isPending ? "Guardando…" : "Guardar cambios"}
-      </Button>
+      <div className="flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          fullWidth={false}
+          className="w-36"
+          onClick={() => formRef.current?.reset()}
+        >
+          Cancelar
+        </Button>
+        <Button type="submit" fullWidth={false} className="w-36" disabled={isPending}>
+          {isPending ? "Guardando…" : "Guardar"}
+        </Button>
+      </div>
     </form>
   );
 }

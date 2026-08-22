@@ -56,9 +56,20 @@ export function PasswordForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={isPending}>
-        {isPending ? "Actualizando…" : "Actualizar contraseña"}
-      </Button>
+      <div className="flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          fullWidth={false}
+          className="w-36"
+          onClick={() => formRef.current?.reset()}
+        >
+          Cancelar
+        </Button>
+        <Button type="submit" fullWidth={false} className="w-36" disabled={isPending}>
+          {isPending ? "Actualizando…" : "Guardar"}
+        </Button>
+      </div>
     </form>
   );
 }
