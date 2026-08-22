@@ -14,17 +14,6 @@ import {
 
 export const userRole = pgEnum("user_role", ["admin", "user"]);
 
-export const sensorType = pgEnum("sensor_type", [
-  "presion",
-  "electricidad",
-  "consumo_agua",
-  "temperatura",
-  "pasarela_lorawan",
-  "nivel_agua",
-  "calidad_aire",
-  "otro",
-]);
-
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -62,7 +51,10 @@ export const providers = pgTable("providers", {
 export const sensors = pgTable("sensors", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 200 }).notNull(),
-  type: sensorType("type").notNull().default("otro"),
+  // varchar en vez de pgEnum a propósito: la lista de íconos/tipos (ver sensor-types.ts)
+  // crece seguido a pedido del usuario, y un enum de Postgres exige una migración por
+  // cada valor nuevo. La validación del valor vive solo en Zod (sensorSchema).
+  type: varchar("type", { length: 60 }).notNull().default("otro"),
   brandId: uuid("brand_id")
     .notNull()
     .references(() => brands.id, { onDelete: "restrict" }),

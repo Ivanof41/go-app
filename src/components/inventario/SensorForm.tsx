@@ -3,9 +3,9 @@
 import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { IconSelect } from "@/components/ui/IconSelect";
 import { EntitySelectField } from "@/components/inventario/EntitySelectField";
-import { SENSOR_TYPES, type SensorTypeValue } from "@/lib/inventario/sensor-types";
-import { clsx } from "@/lib/clsx";
+import { SENSOR_TYPES } from "@/lib/inventario/sensor-types";
 import {
   createBrandAction,
   createTechnologyAction,
@@ -19,7 +19,9 @@ type Option = { id: string; name: string };
 export type SensorFormValues = {
   id: string;
   name: string;
-  type: SensorTypeValue;
+  // string (no SensorTypeValue): la lista de íconos en sensor-types.ts puede crecer o
+  // perder valores, y un sensor viejo puede conservar un "type" que ya no está en la lista.
+  type: string;
   brandId: string;
   technologyId: string;
   providerId: string;
@@ -45,7 +47,7 @@ export function SensorForm({
 }) {
   const action = sensor ? updateSensorAction : createSensorAction;
   const [state, formAction, isPending] = useActionState(action, undefined);
-  const [type, setType] = useState<SensorTypeValue>(sensor?.type ?? "otro");
+  const [type, setType] = useState<string>(sensor?.type ?? "otro");
 
   useEffect(() => {
     if (state?.success) onSaved();
@@ -73,26 +75,10 @@ export function SensorForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-c24-navy">Tipo de sensor</span>
-        <div className="grid grid-cols-4 gap-2">
-          {SENSOR_TYPES.map((t) => (
-            <button
-              key={t.value}
-              type="button"
-              onClick={() => setType(t.value)}
-              aria-pressed={type === t.value}
-              className={clsx(
-                "flex flex-col items-center gap-1 rounded-md border px-1.5 py-2 text-center transition",
-                type === t.value
-                  ? "border-c24-teal bg-c24-teal-light text-c24-navy"
-                  : "border-c24-border text-c24-text-muted hover:border-c24-teal/50 hover:text-c24-navy",
-              )}
-            >
-              <t.icon className="h-[18px] w-[18px]" strokeWidth={type === t.value ? 2 : 1.75} />
-              <span className="text-[11px] leading-tight font-medium">{t.label}</span>
-            </button>
-          ))}
-        </div>
+        <label htmlFor="type-select" className="text-sm font-medium text-c24-navy">
+          Tipo de sensor
+        </label>
+        <IconSelect id="type-select" options={SENSOR_TYPES} value={type} onChange={setType} />
       </div>
 
       <div className="grid grid-cols-3 gap-4">
