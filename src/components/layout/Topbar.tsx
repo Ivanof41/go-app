@@ -13,6 +13,8 @@ import type { CurrentUser } from "@/lib/current-user";
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/ajustes": "Ajustes",
+  "/inventario/sensores": "Sensores",
+  "/inventario/zonas": "Stock",
 };
 
 export function Topbar({ user }: { user: CurrentUser }) {
