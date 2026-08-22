@@ -49,11 +49,11 @@ export function ZoneGrid({
                 }
                 onClick={() => onCellClick(r, c, current)}
                 className={clsx(
-                  "relative flex shrink-0 items-center justify-center rounded-md border transition",
+                  "relative flex shrink-0 items-center justify-center rounded-md border-2 transition",
                   compact ? "h-10 w-10" : "h-14 w-14",
                   current
-                    ? "border-c24-border bg-c24-teal-light/60 text-c24-navy hover:bg-c24-teal-light"
-                    : "border-dashed border-c24-border/70 text-c24-text-muted hover:border-c24-teal/50 hover:text-c24-navy",
+                    ? "border-c24-teal/50 bg-c24-teal-light text-c24-navy hover:border-c24-teal"
+                    : "border-dashed border-c24-navy/25 bg-c24-navy/[0.03] text-c24-text-muted hover:border-c24-teal/60 hover:bg-c24-teal-light/50 hover:text-c24-navy",
                 )}
               >
                 {Icon && <Icon className={compact ? "h-4 w-4" : "h-5 w-5"} strokeWidth={1.75} />}
