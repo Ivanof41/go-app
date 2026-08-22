@@ -1,0 +1,77 @@
+"use client";
+
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { QuickCreateModal } from "@/components/inventario/QuickCreateModal";
+import type { CatalogAction } from "@/components/inventario/CatalogSection";
+
+type Option = { id: string; name: string };
+
+export function EntitySelectField({
+  name,
+  label,
+  initialOptions,
+  defaultValue,
+  createAction,
+  createModalTitle,
+}: {
+  name: string;
+  label: string;
+  initialOptions: Option[];
+  defaultValue?: string;
+  createAction: CatalogAction;
+  createModalTitle: string;
+}) {
+  const [options, setOptions] = useState(initialOptions);
+  const [selected, setSelected] = useState(defaultValue ?? "");
+  const [showCreate, setShowCreate] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={name} className="text-sm font-medium text-c24-navy">
+        {label}
+      </label>
+      <div className="flex gap-2">
+        <select
+          id={name}
+          name={name}
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          required
+          className="w-full rounded-md border border-c24-border bg-white px-3 py-2.5 text-sm text-c24-navy outline-none transition focus:border-c24-teal focus:ring-2 focus:ring-c24-teal/30"
+        >
+          <option value="" disabled>
+            Selecciona…
+          </option>
+          {options.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.name}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() => setShowCreate(true)}
+          aria-label={`Crear ${label.toLowerCase()}`}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-c24-border text-c24-navy transition hover:bg-c24-teal-light"
+        >
+          <Plus className="h-4 w-4" strokeWidth={1.75} />
+        </button>
+      </div>
+
+      {showCreate && (
+        <QuickCreateModal
+          title={createModalTitle}
+          label={label}
+          createAction={createAction}
+          onClose={() => setShowCreate(false)}
+          onCreated={(created) => {
+            setOptions((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
+            setSelected(created.id);
+            setShowCreate(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}

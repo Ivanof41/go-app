@@ -41,10 +41,17 @@ Variantes: `light` (fondo blanco, para pantallas de tema claro — Ajustes, futu
 Contenedor blanco con borde y radio (`rounded-lg border-c24-border`), `title` opcional que renderiza el `h2` de sección. Prop `dashed` para el estilo "placeholder/próximamente" (borde punteado, fondo semitransparente) — usado en las tarjetas del Dashboard.
 
 ### `Modal`
-Overlay + diálogo centrado base. Cierra con `Escape` o click en el overlay (no al hacer click dentro del diálogo). Cualquier modal nuevo se construye sobre este componente, no reinventando su propio overlay (ver `AvatarCropModal` como ejemplo).
+Overlay + diálogo centrado base. Cierra con `Escape` o click en el overlay (no al hacer click dentro del diálogo). Prop `size` (`sm` default, `lg` para formularios con más campos) — **nunca** pasar un `className` con `max-w-*` esperando anular el default, por la misma razón que `Button`/`fullWidth` (ver arriba): usar siempre la prop. Cualquier modal nuevo se construye sobre este componente, no reinventando su propio overlay (ver `AvatarCropModal` como ejemplo).
+
+### `ConfirmDialog`
+Confirmación destructiva genérica sobre `Modal`: título, descripción opcional, error opcional, botones Cancelar (`ghost`)/Confirmar (`danger`). Usar para cualquier borrado — no reinventar el overlay de confirmación cada vez (ver el módulo de Inventario).
 
 ### `Avatar`
 Imagen circular si hay `src` (data URL), o iniciales sobre fondo teal si no. Tamaños `sm`/`md`/`lg`.
+
+## La trampa de las clases Tailwind conflictivas
+
+Ya nos mordió tres veces (`Button.fullWidth`, `Card` con `dashed`, el flyout del Sidebar): si dos utilidades del **mismo eje** (`w-*`, `max-w-*`, `bg-*`, `pointer-events-*`) aparecen juntas en una cadena de clases — una fija y otra condicional — el resultado no se resuelve por orden de aparición en el JSX, sino por el orden interno en que Tailwind genera el CSS. Es decir: **nunca poner el valor base y su override condicional como dos clases separadas del mismo eje**; usar siempre un ternario exclusivo (`condición ? "clase-a" : "clase-b"`) o una prop dedicada del componente (`fullWidth`, `size`, `dashed`).
 
 ## Íconos
 

@@ -6,10 +6,15 @@ import { clsx } from "@/lib/clsx";
 type ModalProps = {
   onClose: () => void;
   children: ReactNode;
-  className?: string;
+  size?: "sm" | "lg";
 };
 
-export function Modal({ onClose, children, className }: ModalProps) {
+const SIZES = {
+  sm: "max-w-sm",
+  lg: "max-w-lg",
+} as const;
+
+export function Modal({ onClose, children, size = "sm" }: ModalProps) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -24,7 +29,7 @@ export function Modal({ onClose, children, className }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className={clsx("w-full max-w-sm rounded-lg bg-white p-4", className)}
+        className={clsx("w-full rounded-lg bg-white p-4", SIZES[size])}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

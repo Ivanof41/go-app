@@ -15,6 +15,13 @@
       "when": 1787347920740,
       "tag": "0001_special_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787355588768,
+      "tag": "0002_familiar_bloodscream",
+      "breakpoints": true
     }
   ]
 }
