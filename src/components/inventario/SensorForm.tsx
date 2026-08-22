@@ -95,30 +95,32 @@ export function SensorForm({
         </div>
       </div>
 
-      <EntitySelectField
-        name="brandId"
-        label="Marca"
-        initialOptions={brands}
-        defaultValue={sensor?.brandId}
-        createAction={createBrandAction}
-        createModalTitle="Nueva marca"
-      />
-      <EntitySelectField
-        name="technologyId"
-        label="Tecnología"
-        initialOptions={technologies}
-        defaultValue={sensor?.technologyId}
-        createAction={createTechnologyAction}
-        createModalTitle="Nueva tecnología"
-      />
-      <EntitySelectField
-        name="providerId"
-        label="Proveedor"
-        initialOptions={providers}
-        defaultValue={sensor?.providerId}
-        createAction={createProviderAction}
-        createModalTitle="Nuevo proveedor"
-      />
+      <div className="grid grid-cols-3 gap-4">
+        <EntitySelectField
+          name="brandId"
+          label="Marca"
+          initialOptions={brands}
+          defaultValue={sensor?.brandId}
+          createAction={createBrandAction}
+          createModalTitle="Nueva marca"
+        />
+        <EntitySelectField
+          name="technologyId"
+          label="Tecnología"
+          initialOptions={technologies}
+          defaultValue={sensor?.technologyId}
+          createAction={createTechnologyAction}
+          createModalTitle="Nueva tecnología"
+        />
+        <EntitySelectField
+          name="providerId"
+          label="Proveedor"
+          initialOptions={providers}
+          defaultValue={sensor?.providerId}
+          createAction={createProviderAction}
+          createModalTitle="Nuevo proveedor"
+        />
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">

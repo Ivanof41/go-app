@@ -6,12 +6,13 @@ import { clsx } from "@/lib/clsx";
 type ModalProps = {
   onClose: () => void;
   children: ReactNode;
-  size?: "sm" | "lg";
+  size?: "sm" | "lg" | "xl";
 };
 
 const SIZES = {
   sm: "max-w-sm",
   lg: "max-w-lg",
+  xl: "max-w-2xl",
 } as const;
 
 export function Modal({ onClose, children, size = "sm" }: ModalProps) {
@@ -27,7 +28,7 @@ export function Modal({ onClose, children, size = "sm" }: ModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8"
       onMouseDown={(e) => {
         mouseDownOnBackdrop.current = e.target === e.currentTarget;
       }}
@@ -35,7 +36,9 @@ export function Modal({ onClose, children, size = "sm" }: ModalProps) {
         if (mouseDownOnBackdrop.current && e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={clsx("w-full rounded-lg bg-white p-4", SIZES[size])}>{children}</div>
+      <div className={clsx("max-h-full w-full overflow-y-auto rounded-lg bg-white p-4", SIZES[size])}>
+        {children}
+      </div>
     </div>
   );
 }

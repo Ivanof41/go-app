@@ -118,7 +118,7 @@ export function SensorsTable({
       {sensors.length === 0 && <p className="mt-4 text-sm text-c24-text-muted">Sin sensores todavía.</p>}
 
       {modalMode && (
-        <Modal onClose={() => setModalMode(null)} size="lg">
+        <Modal onClose={() => setModalMode(null)} size="xl">
           <SensorForm
             sensor={modalMode === "create" ? undefined : modalMode}
             title={modalMode === "create" ? "Nuevo sensor" : "Editar sensor"}
