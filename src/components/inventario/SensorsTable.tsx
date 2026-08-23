@@ -1,17 +1,15 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { SensorForm, type SensorFormValues } from "@/components/inventario/SensorForm";
+import type { SensorFormValues } from "@/components/inventario/SensorForm";
 import { getSensorTypeIcon, getSensorTypeLabel } from "@/lib/inventario/sensor-types";
 import { formatEuro } from "@/lib/inventario/format";
 import { deleteSensorAction } from "@/app/(protected)/inventario/sensores/actions";
 import { clsx } from "@/lib/clsx";
 
-type Option = { id: string; name: string };
 type SensorRow = SensorFormValues & {
   brandName: string | null;
   technologyName: string | null;
@@ -30,18 +28,7 @@ const COLUMNS: { key: SortKey; label: string }[] = [
   { key: "salePrice", label: "P. venta" },
 ];
 
-export function SensorsTable({
-  sensors,
-  brands,
-  technologies,
-  providers,
-}: {
-  sensors: SensorRow[];
-  brands: Option[];
-  technologies: Option[];
-  providers: Option[];
-}) {
-  const [modalMode, setModalMode] = useState<"create" | SensorRow | null>(null);
+export function SensorsTable({ sensors }: { sensors: SensorRow[] }) {
   const [deleteTarget, setDeleteTarget] = useState<SensorRow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDelete] = useTransition();
@@ -114,9 +101,12 @@ export function SensorsTable({
             className="w-full rounded-md border border-c24-border bg-white py-2.5 pr-3 pl-9 text-sm text-c24-navy placeholder:text-c24-text-muted/60 outline-none transition focus:border-c24-teal focus:ring-2 focus:ring-c24-teal/30"
           />
         </div>
-        <Button type="button" fullWidth={false} onClick={() => setModalMode("create")}>
-          <Plus className="mr-1.5 inline h-4 w-4" strokeWidth={1.75} /> Nuevo sensor
-        </Button>
+        <Link
+          href="/inventario/sensores/nuevo"
+          className="flex items-center rounded-md bg-c24-navy px-4 py-2.5 text-sm font-medium text-white transition hover:bg-c24-teal-dark"
+        >
+          <Plus className="mr-1.5 h-4 w-4" strokeWidth={1.75} /> Nuevo sensor
+        </Link>
       </div>
 
       <div className="mt-4 overflow-x-auto">
@@ -165,14 +155,13 @@ export function SensorsTable({
                   <td className="py-2.5 text-c24-navy">{formatEuro(s.purchasePrice)}</td>
                   <td className="py-2.5 text-c24-navy">{formatEuro(s.salePrice)}</td>
                   <td className="py-2.5 text-right whitespace-nowrap">
-                    <button
-                      type="button"
+                    <Link
+                      href={`/inventario/sensores/${s.id}/editar`}
                       aria-label="Editar"
-                      onClick={() => setModalMode(s)}
-                      className="p-1.5 text-c24-text-muted hover:text-c24-navy"
+                      className="inline-flex p-1.5 text-c24-text-muted hover:text-c24-navy"
                     >
                       <Pencil className="h-4 w-4" strokeWidth={1.75} />
-                    </button>
+                    </Link>
                     <button
                       type="button"
                       aria-label="Eliminar"
@@ -194,19 +183,6 @@ export function SensorsTable({
       {sensors.length === 0 && <p className="mt-4 text-sm text-c24-text-muted">Sin sensores todavía.</p>}
       {sensors.length > 0 && sortedSensors.length === 0 && (
         <p className="mt-4 text-sm text-c24-text-muted">Ningún sensor coincide con &ldquo;{search}&rdquo;.</p>
-      )}
-
-      {modalMode && (
-        <Modal onClose={() => setModalMode(null)} size="xl">
-          <SensorForm
-            sensor={modalMode === "create" ? undefined : modalMode}
-            title={modalMode === "create" ? "Nuevo sensor" : "Editar sensor"}
-            brands={brands}
-            technologies={technologies}
-            providers={providers}
-            onSaved={() => setModalMode(null)}
-          />
-        </Modal>
       )}
 
       {deleteTarget && (

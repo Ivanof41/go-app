@@ -84,6 +84,39 @@ export const zones = pgTable("zones", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Catálogo de accesorios (Toroidales, etc.) — mismo patrón que brands/technologies/
+// providers: solo se crean al vuelo desde el formulario de sensor, sin edición/borrado
+// propio.
+export const accessories = pgTable("accessories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 150 }).notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const sensorAccessories = pgTable(
+  "sensor_accessories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // cascade (única vez en este schema — todo lo demás es restrict): el enlace a un
+    // accesorio es un dato propio del sensor (una línea de su "pack"), no un hecho físico
+    // independiente como el stock — borrar el sensor borra su composición sin fricción.
+    sensorId: uuid("sensor_id")
+      .notNull()
+      .references(() => sensors.id, { onDelete: "cascade" }),
+    accessoryId: uuid("accessory_id")
+      .notNull()
+      .references(() => accessories.id, { onDelete: "restrict" }),
+    quantity: integer("quantity").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("sensor_accessories_sensor_accessory_unique").on(table.sensorId, table.accessoryId),
+    check("sensor_accessories_quantity_positive", sql`${table.quantity} >= 1`),
+  ],
+);
+
 export const sensorStock = pgTable(
   "sensor_stock",
   {

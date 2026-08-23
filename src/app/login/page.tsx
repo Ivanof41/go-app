@@ -6,7 +6,7 @@ export default function LoginPage() {
   return (
     <main className="relative flex min-h-screen overflow-hidden">
       <div
-        className="halo-glow pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-72 -translate-x-1/2 md:block"
+        className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-72 -translate-x-1/2 md:block"
         style={{
           background:
             "radial-gradient(closest-side, rgba(106,181,171,0.95) 0%, rgba(106,181,171,0.5) 40%, transparent 72%)",
@@ -14,7 +14,7 @@ export default function LoginPage() {
         }}
       />
       <div
-        className="halo-glow pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-1 -translate-x-1/2 md:block"
+        className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-1 -translate-x-1/2 md:block"
         style={{
           background: "rgba(106,181,171,0.9)",
           filter: "blur(3px)",

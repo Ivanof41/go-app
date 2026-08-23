@@ -57,6 +57,13 @@
       "when": 1787435130027,
       "tag": "0007_black_chamber",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787469198387,
+      "tag": "0008_sour_serpent_society",
+      "breakpoints": true
     }
   ]
 }

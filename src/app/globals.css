@@ -43,17 +43,3 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
-
-@keyframes halo-breathe {
-  0%,
-  100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.halo-glow {
-  animation: halo-breathe 5s ease-in-out infinite;
-}

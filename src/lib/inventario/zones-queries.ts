@@ -33,3 +33,12 @@ export async function getSensorOptions() {
     .from(sensors)
     .orderBy(asc(sensors.name));
 }
+
+// Lista liviana para /inventario/zonas/gestionar: no necesita el stock de
+// getZonesWithStock(), solo los campos propios de la zona.
+export async function listZones() {
+  return db
+    .select({ id: zones.id, name: zones.name, location: zones.location, rows: zones.rows, cols: zones.cols })
+    .from(zones)
+    .orderBy(asc(zones.position), asc(zones.name));
+}
