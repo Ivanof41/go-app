@@ -1,0 +1,1 @@
+ALTER TABLE "sensors" ADD COLUMN "manual_path" varchar(300);

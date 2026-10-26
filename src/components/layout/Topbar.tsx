@@ -29,9 +29,7 @@ export function Topbar({ user }: { user: CurrentUser }) {
   }, []);
 
   return (
-    <header className="relative flex h-16 items-center justify-end bg-white px-6 shadow-[0_4px_24px_-8px_rgba(0,60,91,0.15)]">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-c24-teal/60 to-transparent" />
-
+    <header className="relative flex h-16 items-center justify-end border-b border-c24-border bg-c24-teal-light px-6 shadow-[0_4px_24px_-8px_rgba(0,60,91,0.15)]">
       <div className="flex items-center gap-4">
         <Clock />
         <span className="h-6 w-px bg-c24-border" />
@@ -40,7 +38,7 @@ export function Topbar({ user }: { user: CurrentUser }) {
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="flex items-center gap-3 rounded-md px-2 py-1.5 transition hover:bg-c24-teal-light"
+            className="flex items-center gap-3 rounded-md px-2 py-1.5 transition hover:bg-white"
           >
             <Avatar src={user.avatar} name={user.name} size="sm" />
             <span className="text-sm font-medium text-c24-navy">{user.name}</span>

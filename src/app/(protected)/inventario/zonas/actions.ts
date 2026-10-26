@@ -104,7 +104,7 @@ export async function deleteZoneAction(_prev: ActionState, formData: FormData): 
     .from(sensorStock)
     .where(eq(sensorStock.zoneId, parsed.data.id));
   if (total > 0) {
-    return { error: `No puedes eliminar esta zona: tiene stock de ${total} sensor(es) asociado(s)` };
+    return { error: `No puedes eliminar esta zona: tiene ${total} registro(s) de stock asociado(s)` };
   }
 
   await db.delete(zones).where(eq(zones.id, parsed.data.id));
@@ -150,14 +150,27 @@ export async function renameZoneRowAction(_prev: ActionState, formData: FormData
 
 // --- Stock ---
 
-const stockSchema = z.object({
-  sensorId: z.string().uuid("Selecciona un sensor"),
-  zoneId: z.string().uuid("Selecciona una zona"),
-  row: z.coerce.number().int().min(0),
-  col: z.coerce.number().int().min(0),
-  mode: z.enum(["delta", "absolute"]),
-  amount: z.coerce.number().int(),
-});
+// sensorId/accessoryId: una celda guarda uno u otro, nunca los dos — mismo par
+// exactamente-uno-de-los-dos que ya impone el CHECK de la tabla (ver schema.ts). Se
+// mantiene el nombre "upsertSensorStockAction" (y "sensor_stock" en el schema) aunque ya
+// no sea exclusivo de sensores — renombrar tocaría cada componente de Zonas por una
+// ganancia solo cosmética.
+const emptyToUndefined = (v: FormDataEntryValue | null) =>
+  typeof v === "string" && v.trim() !== "" ? v : undefined;
+
+const stockSchema = z
+  .object({
+    sensorId: z.string().uuid().optional(),
+    accessoryId: z.string().uuid().optional(),
+    zoneId: z.string().uuid("Selecciona una zona"),
+    row: z.coerce.number().int().min(0),
+    col: z.coerce.number().int().min(0),
+    mode: z.enum(["delta", "absolute"]),
+    amount: z.coerce.number().int(),
+  })
+  .refine((data) => Boolean(data.sensorId) !== Boolean(data.accessoryId), {
+    message: "Selecciona un sensor o un accesorio",
+  });
 
 export async function upsertSensorStockAction(
   _prev: ActionState,
@@ -167,7 +180,8 @@ export async function upsertSensorStockAction(
   if (!session?.user?.id) return { error: "Sesión expirada" };
 
   const parsed = stockSchema.safeParse({
-    sensorId: formData.get("sensorId"),
+    sensorId: emptyToUndefined(formData.get("sensorId")),
+    accessoryId: emptyToUndefined(formData.get("accessoryId")),
     zoneId: formData.get("zoneId"),
     row: formData.get("row"),
     col: formData.get("col"),
@@ -176,7 +190,7 @@ export async function upsertSensorStockAction(
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
 
-  const { sensorId, zoneId, row, col, mode, amount } = parsed.data;
+  const { sensorId, accessoryId, zoneId, row, col, mode, amount } = parsed.data;
 
   const [zone] = await db.select({ rows: zones.rows, cols: zones.cols }).from(zones).where(eq(zones.id, zoneId));
   if (!zone) return { error: "Zona inválida" };
@@ -201,11 +215,19 @@ export async function upsertSensorStockAction(
 
   await db
     .insert(sensorStock)
-    .values({ sensorId, zoneId, row, col, quantity: current ? Math.max(amount, 0) : amount })
+    .values({
+      sensorId: sensorId ?? null,
+      accessoryId: accessoryId ?? null,
+      zoneId,
+      row,
+      col,
+      quantity: current ? Math.max(amount, 0) : amount,
+    })
     .onConflictDoUpdate({
       target: [sensorStock.zoneId, sensorStock.row, sensorStock.col],
       set: {
-        sensorId,
+        sensorId: sensorId ?? null,
+        accessoryId: accessoryId ?? null,
         quantity: mode === "absolute" ? amount : sql`${sensorStock.quantity} + ${amount}`,
         updatedAt: new Date(),
       },

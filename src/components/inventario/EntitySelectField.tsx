@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Settings2 } from "lucide-react";
 import { QuickCreateModal } from "@/components/inventario/QuickCreateModal";
-import type { CatalogAction } from "@/app/(protected)/inventario/sensores/actions";
+import { ManageCatalogModal } from "@/components/inventario/ManageCatalogModal";
+import type { ActionState, CatalogAction } from "@/app/(protected)/inventario/sensores/actions";
 
 type Option = { id: string; name: string };
 
@@ -14,6 +15,11 @@ export function EntitySelectField({
   defaultValue,
   createAction,
   createModalTitle,
+  updateAction,
+  deleteAction,
+  manageModalTitle,
+  manageNewPlaceholder,
+  manageEmptyText,
 }: {
   name: string;
   label: string;
@@ -21,10 +27,16 @@ export function EntitySelectField({
   defaultValue?: string;
   createAction: CatalogAction;
   createModalTitle: string;
+  updateAction: CatalogAction;
+  deleteAction: (prev: ActionState, formData: FormData) => Promise<ActionState>;
+  manageModalTitle: string;
+  manageNewPlaceholder: string;
+  manageEmptyText: string;
 }) {
   const [options, setOptions] = useState(initialOptions);
   const [selected, setSelected] = useState(defaultValue ?? "");
   const [showCreate, setShowCreate] = useState(false);
+  const [showManage, setShowManage] = useState(false);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -54,6 +66,14 @@ export function EntitySelectField({
         >
           <Plus className="h-4 w-4" strokeWidth={1.75} />
         </button>
+        <button
+          type="button"
+          onClick={() => setShowManage(true)}
+          aria-label={`Gestionar ${label.toLowerCase()}`}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-c24-border text-c24-navy transition hover:bg-c24-teal-light"
+        >
+          <Settings2 className="h-4 w-4" strokeWidth={1.75} />
+        </button>
       </div>
 
       {showCreate && (
@@ -66,6 +86,24 @@ export function EntitySelectField({
             setOptions((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
             setSelected(created.id);
             setShowCreate(false);
+          }}
+        />
+      )}
+
+      {showManage && (
+        <ManageCatalogModal
+          title={manageModalTitle}
+          entityLabel={label.toLowerCase()}
+          newPlaceholder={manageNewPlaceholder}
+          emptyText={manageEmptyText}
+          options={options}
+          createAction={createAction}
+          updateAction={updateAction}
+          deleteAction={deleteAction}
+          onClose={() => setShowManage(false)}
+          onChange={(next) => {
+            setOptions(next);
+            setSelected((prev) => (next.some((o) => o.id === prev) ? prev : ""));
           }}
         />
       )}

@@ -12,7 +12,7 @@ export default async function ProtectedLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="flex min-h-screen bg-c24-teal-light">
+    <div className="flex min-h-screen bg-white">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar user={user} />

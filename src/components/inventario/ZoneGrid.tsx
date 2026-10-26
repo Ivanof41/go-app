@@ -11,9 +11,10 @@ export type ZoneGridCell = {
   id: string;
   row: number;
   col: number;
-  sensorId: string;
-  sensorName: string;
-  sensorType: string;
+  kind: "sensor" | "accessory";
+  itemId: string;
+  itemName: string;
+  itemType: string;
   quantity: number;
 };
 
@@ -30,6 +31,7 @@ export function ZoneGrid({
   stock,
   onCellClick,
   compact,
+  dark,
 }: {
   zoneId: string;
   rows: number;
@@ -38,6 +40,10 @@ export function ZoneGrid({
   stock: ZoneGridCell[];
   onCellClick: (row: number, col: number, current: ZoneGridCell | null) => void;
   compact?: boolean;
+  // ZoneGrid vive en dos fondos distintos: la Card oscura de Zonas y el Modal blanco de
+  // "Agregar stock" — no alcanza con inferirlo de `compact` (que solo controla tamaño),
+  // así que cada llamador dice explícitamente en qué fondo está.
+  dark?: boolean;
 }) {
   const cellByPosition = new Map(stock.map((s) => [`${s.row}-${s.col}`, s]));
 
@@ -52,6 +58,7 @@ export function ZoneGrid({
               label={rowLabels?.[r] ?? ""}
               editable={!compact}
               compact={compact}
+              dark={dark}
             />
             <div className="flex gap-2">
               {Array.from({ length: cols }).map((_, c) => {
@@ -63,6 +70,7 @@ export function ZoneGrid({
                     rowLabel={rowLabelFor(rowLabels, r)}
                     current={current}
                     compact={compact}
+                    dark={dark}
                     onClick={() => onCellClick(r, c, current)}
                   />
                 );
@@ -81,12 +89,14 @@ function RowLabel({
   label,
   editable,
   compact,
+  dark,
 }: {
   zoneId: string;
   row: number;
   label: string;
   editable: boolean;
   compact?: boolean;
+  dark?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(label);
@@ -132,7 +142,11 @@ function RowLabel({
   }
 
   if (!editable) {
-    return <span className={clsx("shrink-0 truncate text-sm font-medium text-c24-navy", widthClass)}>{display}</span>;
+    return (
+      <span className={clsx("shrink-0 truncate text-sm font-medium", dark ? "text-white" : "text-c24-navy", widthClass)}>
+        {display}
+      </span>
+    );
   }
 
   return (
@@ -140,13 +154,17 @@ function RowLabel({
       type="button"
       onClick={() => setEditing(true)}
       className={clsx(
-        "group flex shrink-0 items-center gap-1 text-left text-sm font-medium text-c24-navy",
+        "group flex shrink-0 items-center gap-1 text-left text-sm font-medium",
+        dark ? "text-white" : "text-c24-navy",
         widthClass,
       )}
     >
       <span className="truncate">{display}</span>
       <Pencil
-        className="h-3 w-3 shrink-0 text-c24-text-muted opacity-0 transition group-hover:opacity-100"
+        className={clsx(
+          "h-3 w-3 shrink-0 opacity-0 transition group-hover:opacity-100",
+          dark ? "text-white/50" : "text-c24-text-muted",
+        )}
         strokeWidth={1.75}
       />
     </button>
@@ -158,12 +176,14 @@ function GridCell({
   rowLabel,
   current,
   compact,
+  dark,
   onClick,
 }: {
   col: number;
   rowLabel: string;
   current: ZoneGridCell | null;
   compact?: boolean;
+  dark?: boolean;
   onClick: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -189,12 +209,14 @@ function GridCell({
           compact ? "h-10 w-10" : "h-14 w-14",
           current
             ? "border-c24-teal/50 bg-c24-teal-light text-c24-navy hover:border-c24-teal"
-            : "border-dashed border-c24-navy/25 bg-c24-navy/[0.03] text-c24-text-muted hover:border-c24-teal/60 hover:bg-c24-teal-light/50 hover:text-c24-navy",
+            : dark
+              ? "border-dashed border-white/20 bg-white/5 text-white/40 hover:border-c24-teal/60 hover:bg-white/10 hover:text-white"
+              : "border-dashed border-c24-navy/25 bg-c24-navy/[0.03] text-c24-text-muted hover:border-c24-teal/60 hover:bg-c24-teal-light/50 hover:text-c24-navy",
         )}
       >
         {current &&
           (() => {
-            const Icon = getSensorTypeIcon(current.sensorType);
+            const Icon = getSensorTypeIcon(current.itemType);
             return <Icon className={compact ? "h-4 w-4" : "h-5 w-5"} strokeWidth={1.75} />;
           })()}
         {current && (
@@ -218,7 +240,9 @@ function GridCell({
               hovered ? "opacity-100" : "opacity-0",
             )}
           >
-            {current ? `${current.sensorName} — ${current.quantity} uds` : `${rowLabel}, posición ${col + 1}`}
+            {current
+              ? `${current.itemName}${current.kind === "accessory" ? " (accesorio)" : ""} — ${current.quantity} uds`
+              : `${rowLabel}, posición ${col + 1}`}
           </span>,
           document.body,
         )}

@@ -5,7 +5,6 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { clsx } from "@/lib/clsx";
 import {
   createZoneAction,
   updateZoneAction,
@@ -15,7 +14,6 @@ import {
 type Zone = { id: string; name: string; location: string | null; rows: number; cols: number };
 
 export function ZonesManager({ zones }: { zones: Zone[] }) {
-  const [tab, setTab] = useState<"create" | "manage">("create");
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [newRows, setNewRows] = useState("3");
@@ -53,7 +51,6 @@ export function ZonesManager({ zones }: { zones: Zone[] }) {
       setNewLocation("");
       setNewRows("3");
       setNewCols("4");
-      setTab("manage");
     });
   }
 
@@ -95,90 +92,59 @@ export function ZonesManager({ zones }: { zones: Zone[] }) {
     <div>
       <h1 className="text-2xl font-semibold text-c24-navy">Gestionar zonas</h1>
 
-      <div className="mt-4 flex w-fit rounded-md border border-c24-border p-1">
-        <button
-          type="button"
-          onClick={() => setTab("create")}
-          className={clsx(
-            "rounded-md px-4 py-1.5 text-sm font-medium transition",
-            tab === "create" ? "bg-c24-navy text-white" : "text-c24-text-muted hover:text-c24-navy",
-          )}
-        >
-          Crear zona
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("manage")}
-          className={clsx(
-            "rounded-md px-4 py-1.5 text-sm font-medium transition",
-            tab === "manage" ? "bg-c24-navy text-white" : "text-c24-text-muted hover:text-c24-navy",
-          )}
-        >
-          Zonas existentes ({zones.length})
-        </button>
-      </div>
-
-      {tab === "create" && (
-        <div className="mt-4 max-w-2xl">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="new-name" className="text-sm font-medium text-c24-navy">
-                Nombre
-              </label>
-              <Input
-                id="new-name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Nombre de la zona…"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="new-location" className="text-sm font-medium text-c24-navy">
-                Ubicación (opcional)
-              </label>
-              <Input
-                id="new-location"
-                value={newLocation}
-                onChange={(e) => setNewLocation(e.target.value)}
-                placeholder="ej. Almacén B"
-              />
-            </div>
+      <div className="mt-6">
+        <h2 className="text-sm font-semibold text-c24-navy">Crear zona</h2>
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <div className="flex min-w-48 flex-1 flex-col gap-1.5">
+            <label htmlFor="new-name" className="text-sm font-medium text-c24-navy">
+              Nombre
+            </label>
+            <Input
+              id="new-name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Nombre de la zona…"
+            />
           </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:max-w-xs">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="new-rows" className="text-sm font-medium text-c24-navy">
-                Baldas
-              </label>
-              <Input
-                id="new-rows"
-                type="number"
-                min={1}
-                max={12}
-                value={newRows}
-                onChange={(e) => setNewRows(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="new-cols" className="text-sm font-medium text-c24-navy">
-                Posiciones por balda
-              </label>
-              <Input
-                id="new-cols"
-                type="number"
-                min={1}
-                max={12}
-                value={newCols}
-                onChange={(e) => setNewCols(e.target.value)}
-              />
-            </div>
+          <div className="flex min-w-48 flex-1 flex-col gap-1.5">
+            <label htmlFor="new-location" className="text-sm font-medium text-c24-navy">
+              Ubicación (opcional)
+            </label>
+            <Input
+              id="new-location"
+              value={newLocation}
+              onChange={(e) => setNewLocation(e.target.value)}
+              placeholder="ej. Almacén B"
+            />
           </div>
-
-          {createError && (
-            <p className="mt-3 rounded-md bg-c24-danger-light px-3 py-2 text-sm text-c24-danger">{createError}</p>
-          )}
-
-          <div className="mt-3 flex justify-end">
+          <div className="flex w-24 flex-col gap-1.5">
+            <label htmlFor="new-rows" className="text-sm font-medium text-c24-navy">
+              Baldas
+            </label>
+            <Input
+              id="new-rows"
+              type="number"
+              min={1}
+              max={12}
+              value={newRows}
+              onChange={(e) => setNewRows(e.target.value)}
+            />
+          </div>
+          <div className="flex w-40 flex-col gap-1.5">
+            <label htmlFor="new-cols" className="text-sm font-medium text-c24-navy">
+              Posiciones por balda
+            </label>
+            <Input
+              id="new-cols"
+              type="number"
+              min={1}
+              max={12}
+              value={newCols}
+              onChange={(e) => setNewCols(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="invisible text-sm font-medium">Agregar</span>
             <Button
               type="button"
               fullWidth={false}
@@ -190,13 +156,19 @@ export function ZonesManager({ zones }: { zones: Zone[] }) {
             </Button>
           </div>
         </div>
-      )}
 
-      {tab === "manage" &&
-        (zones.length === 0 ? (
-          <p className="mt-4 text-sm text-c24-text-muted">Sin zonas todavía</p>
+        {createError && (
+          <p className="mt-3 rounded-md bg-c24-danger-light px-3 py-2 text-sm text-c24-danger">{createError}</p>
+        )}
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-sm font-semibold text-c24-navy">Zonas existentes ({zones.length})</h2>
+
+        {zones.length === 0 ? (
+          <p className="mt-3 text-sm text-c24-text-muted">Sin zonas todavía</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-c24-border text-left text-c24-text-muted">
@@ -298,7 +270,8 @@ export function ZonesManager({ zones }: { zones: Zone[] }) {
               </tbody>
             </table>
           </div>
-        ))}
+        )}
+      </div>
 
       {deleteTarget && (
         <ConfirmDialog

@@ -7,7 +7,53 @@ import { clsx } from "@/lib/clsx";
 
 type IconOption = { value: string; label: string; icon: LucideIcon };
 
+// Modo iconOnly: se usa para clasificar por tipo/ícono (Sensor, Accesorio), donde el
+// nombre es ruido y el ícono solo, con tooltip, alcanza. Es una franja de íconos siempre
+// visible (sin desplegable) — con ~20 opciones fijas no vale la pena esconderlas detrás
+// de un click, se ven y se eligen de una. Para elegir UNA instancia entre varias (ej. el
+// selector de sensor de CellStockModal) el nombre es la única forma de distinguirlas, así
+// que ese caso deja iconOnly en false (default) y conserva el desplegable con etiqueta.
 export function IconSelect({
+  id,
+  options,
+  value,
+  onChange,
+  iconOnly,
+}: {
+  id?: string;
+  options: readonly IconOption[];
+  value: string;
+  onChange: (value: string) => void;
+  iconOnly?: boolean;
+}) {
+  if (iconOnly) {
+    return (
+      <div id={id} className="flex flex-wrap gap-1">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            title={o.label}
+            aria-label={o.label}
+            onClick={() => onChange(o.value)}
+            className={clsx(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition",
+              o.value === value
+                ? "border-c24-teal bg-c24-teal-light text-c24-navy"
+                : "border-c24-border text-c24-navy hover:bg-c24-teal-light/60",
+            )}
+          >
+            <o.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={o.value === value ? 2 : 1.75} />
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return <LabeledIconSelect id={id} options={options} value={value} onChange={onChange} />;
+}
+
+function LabeledIconSelect({
   id,
   options,
   value,

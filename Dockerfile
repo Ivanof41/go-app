@@ -22,6 +22,10 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Directorio para las fotos de Montajes — se monta un volumen nombrado acá en prod, hace
+# falta que exista con el owner correcto antes de que Docker lo monte por primera vez.
+RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000

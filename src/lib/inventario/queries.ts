@@ -1,13 +1,40 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { accessories, brands, providers, sensorAccessories, sensors, technologies } from "@/db/schema";
+import { accessories, brands, providers, sensors, technologies } from "@/db/schema";
 
 export async function listBrands() {
   return db.select({ id: brands.id, name: brands.name }).from(brands).orderBy(asc(brands.name));
 }
 
 export async function listAccessories() {
-  return db.select({ id: accessories.id, name: accessories.name }).from(accessories).orderBy(asc(accessories.name));
+  return db
+    .select({
+      id: accessories.id,
+      name: accessories.name,
+      type: accessories.type,
+      brandId: accessories.brandId,
+      brandName: brands.name,
+      purchasePrice: accessories.purchasePrice,
+      salePrice: accessories.salePrice,
+    })
+    .from(accessories)
+    .leftJoin(brands, eq(accessories.brandId, brands.id))
+    .orderBy(asc(accessories.name));
+}
+
+export async function getAccessoryById(id: string) {
+  const [row] = await db
+    .select({
+      id: accessories.id,
+      name: accessories.name,
+      type: accessories.type,
+      brandId: accessories.brandId,
+      purchasePrice: accessories.purchasePrice,
+      salePrice: accessories.salePrice,
+    })
+    .from(accessories)
+    .where(eq(accessories.id, id));
+  return row ?? null;
 }
 
 export async function listTechnologies() {
@@ -39,6 +66,7 @@ export async function listSensors() {
       purchasePrice: sensors.purchasePrice,
       salePrice: sensors.salePrice,
       notes: sensors.notes,
+      manualPath: sensors.manualPath,
     })
     .from(sensors)
     .leftJoin(brands, eq(sensors.brandId, brands.id))
@@ -59,21 +87,10 @@ export async function getSensorById(id: string) {
       purchasePrice: sensors.purchasePrice,
       salePrice: sensors.salePrice,
       notes: sensors.notes,
+      manualPath: sensors.manualPath,
     })
     .from(sensors)
     .where(eq(sensors.id, id));
   return row ?? null;
 }
 
-export async function getSensorAccessories(sensorId: string) {
-  return db
-    .select({
-      accessoryId: sensorAccessories.accessoryId,
-      accessoryName: accessories.name,
-      quantity: sensorAccessories.quantity,
-    })
-    .from(sensorAccessories)
-    .innerJoin(accessories, eq(accessories.id, sensorAccessories.accessoryId))
-    .where(eq(sensorAccessories.sensorId, sensorId))
-    .orderBy(asc(accessories.name));
-}

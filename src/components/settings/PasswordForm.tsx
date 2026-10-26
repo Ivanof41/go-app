@@ -51,7 +51,7 @@ export function PasswordForm() {
         </p>
       )}
       {state?.success && (
-        <p className="rounded-md bg-c24-teal-light px-3 py-2 text-sm text-c24-navy">
+        <p className="rounded-md bg-c24-teal-light px-3 py-2 text-sm text-c24-teal-dark">
           {state.success}
         </p>
       )}

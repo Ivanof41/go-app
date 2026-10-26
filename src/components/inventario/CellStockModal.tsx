@@ -14,7 +14,8 @@ import {
 } from "@/app/(protected)/inventario/zonas/actions";
 import type { ZoneGridCell } from "@/components/inventario/ZoneGrid";
 
-type SensorOption = { id: string; name: string; type: string };
+type ItemOption = { id: string; name: string; type: string };
+type Kind = "sensor" | "accessory";
 
 export function CellStockModal({
   zoneId,
@@ -23,7 +24,9 @@ export function CellStockModal({
   col,
   current,
   sensorOptions,
-  defaultSensorId,
+  accessoryOptions,
+  defaultKind,
+  defaultItemId,
   onSaved,
   onClose,
 }: {
@@ -32,14 +35,20 @@ export function CellStockModal({
   row: number;
   col: number;
   current: ZoneGridCell | null;
-  sensorOptions: SensorOption[];
-  defaultSensorId?: string;
+  sensorOptions: ItemOption[];
+  accessoryOptions: ItemOption[];
+  defaultKind?: Kind;
+  defaultItemId?: string;
   onSaved: () => void;
   onClose: () => void;
 }) {
   const [state, formAction, isPending] = useActionState(upsertSensorStockAction, undefined);
   const [mode, setMode] = useState<"delta" | "absolute">("delta");
-  const [sensorId, setSensorId] = useState(defaultSensorId ?? sensorOptions[0]?.id ?? "");
+  const canSensor = sensorOptions.length > 0;
+  const canAccessory = accessoryOptions.length > 0;
+  const [kind, setKind] = useState<Kind>(defaultKind ?? (canSensor ? "sensor" : "accessory"));
+  const optionsForKind = kind === "sensor" ? sensorOptions : accessoryOptions;
+  const [itemId, setItemId] = useState(defaultItemId ?? optionsForKind[0]?.id ?? "");
   const [showRemove, setShowRemove] = useState(false);
   const [removeError, setRemoveError] = useState<string | null>(null);
   const [isRemoving, startRemove] = useTransition();
@@ -47,6 +56,12 @@ export function CellStockModal({
   useEffect(() => {
     if (state?.success) onSaved();
   }, [state?.success, onSaved]);
+
+  function handleKindChange(next: Kind) {
+    setKind(next);
+    const opts = next === "sensor" ? sensorOptions : accessoryOptions;
+    setItemId(opts[0]?.id ?? "");
+  }
 
   function handleRemove() {
     if (!current) return;
@@ -63,20 +78,20 @@ export function CellStockModal({
     });
   }
 
-  const sensorIconOptions = sensorOptions.map((s) => ({
-    value: s.id,
-    label: s.name,
-    icon: getSensorTypeIcon(s.type),
+  const iconOptionsForKind = optionsForKind.map((o) => ({
+    value: o.id,
+    label: o.name,
+    icon: getSensorTypeIcon(o.type),
   }));
 
-  if (sensorOptions.length === 0 && !current) {
+  if (!canSensor && !canAccessory && !current) {
     return (
       <Modal onClose={onClose}>
         <h3 className="text-base font-semibold text-c24-navy">
           {zoneName} — Balda {row + 1}, posición {col + 1}
         </h3>
         <p className="mt-3 text-sm text-c24-text-muted">
-          Todavía no hay sensores registrados. Crea uno primero en Inventario → Sensores.
+          Todavía no hay sensores ni accesorios registrados. Crea uno primero en Inventario → Sensores.
         </p>
         <div className="mt-4 flex justify-end">
           <Button type="button" variant="ghost" fullWidth={false} onClick={onClose}>
@@ -101,13 +116,18 @@ export function CellStockModal({
 
         {current ? (
           <>
-            <input type="hidden" name="sensorId" value={current.sensorId} />
+            <input type="hidden" name={current.kind === "sensor" ? "sensorId" : "accessoryId"} value={current.itemId} />
             <div className="flex items-center gap-2.5 rounded-md border border-c24-border bg-c24-teal-light/40 px-3 py-2.5">
               {(() => {
-                const Icon = getSensorTypeIcon(current.sensorType);
+                const Icon = getSensorTypeIcon(current.itemType);
                 return <Icon className="h-[18px] w-[18px] shrink-0 text-c24-navy" strokeWidth={1.75} />;
               })()}
-              <span className="text-sm font-medium text-c24-navy">{current.sensorName}</span>
+              <span className="text-sm font-medium text-c24-navy">
+                {current.itemName}
+                {current.kind === "accessory" && (
+                  <span className="ml-1.5 text-xs font-normal text-c24-text-muted">(accesorio)</span>
+                )}
+              </span>
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -153,12 +173,41 @@ export function CellStockModal({
           </>
         ) : (
           <>
-            <input type="hidden" name="sensorId" value={sensorId} />
+            <input type="hidden" name={kind === "sensor" ? "sensorId" : "accessoryId"} value={itemId} />
+
+            {canSensor && canAccessory && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium text-c24-navy">Tipo</span>
+                <div className="flex rounded-md border border-c24-border p-1">
+                  <button
+                    type="button"
+                    onClick={() => handleKindChange("sensor")}
+                    className={clsx(
+                      "flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition",
+                      kind === "sensor" ? "bg-c24-navy text-white" : "text-c24-text-muted hover:text-c24-navy",
+                    )}
+                  >
+                    Sensor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleKindChange("accessory")}
+                    className={clsx(
+                      "flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition",
+                      kind === "accessory" ? "bg-c24-navy text-white" : "text-c24-text-muted hover:text-c24-navy",
+                    )}
+                  >
+                    Accesorio
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="cell-sensor" className="text-sm font-medium text-c24-navy">
-                Sensor
+              <label htmlFor="cell-item" className="text-sm font-medium text-c24-navy">
+                {kind === "sensor" ? "Sensor" : "Accesorio"}
               </label>
-              <IconSelect id="cell-sensor" options={sensorIconOptions} value={sensorId} onChange={setSensorId} />
+              <IconSelect id="cell-item" options={iconOptionsForKind} value={itemId} onChange={setItemId} />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -200,7 +249,7 @@ export function CellStockModal({
       {showRemove && (
         <ConfirmDialog
           title="Quitar stock de esta posición"
-          description={`¿Quitar "${current?.sensorName}" de la balda ${row + 1}, posición ${col + 1}?`}
+          description={`¿Quitar "${current?.itemName}" de la balda ${row + 1}, posición ${col + 1}?`}
           isPending={isRemoving}
           error={removeError}
           onConfirm={handleRemove}

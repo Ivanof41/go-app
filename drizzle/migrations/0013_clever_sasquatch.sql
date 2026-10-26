@@ -1,0 +1,1 @@
+ALTER TABLE "montaje_items" ADD COLUMN "notes" text;

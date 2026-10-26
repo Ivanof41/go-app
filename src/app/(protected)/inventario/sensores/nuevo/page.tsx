@@ -4,17 +4,16 @@ import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/current-user";
 import { Card } from "@/components/ui/Card";
 import { SensorForm } from "@/components/inventario/SensorForm";
-import { listAccessories, listBrands, listProviders, listTechnologies } from "@/lib/inventario/queries";
+import { listBrands, listProviders, listTechnologies } from "@/lib/inventario/queries";
 
 export default async function NuevoSensorPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [brands, technologies, providers, accessories] = await Promise.all([
+  const [brands, technologies, providers] = await Promise.all([
     listBrands(),
     listTechnologies(),
     listProviders(),
-    listAccessories(),
   ]);
 
   return (
@@ -26,13 +25,12 @@ export default async function NuevoSensorPage() {
         <ArrowLeft className="h-4 w-4" strokeWidth={1.75} /> Volver a Sensores
       </Link>
 
-      <Card className="mt-4 max-w-3xl">
+      <Card className="mt-4" light>
         <SensorForm
           title="Nuevo sensor"
           brands={brands}
           technologies={technologies}
           providers={providers}
-          accessories={accessories}
         />
       </Card>
     </div>

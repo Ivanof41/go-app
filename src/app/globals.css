@@ -43,3 +43,47 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
+
+/* Tailwind v4 preflight resetea el cursor de <button> a "default" (antes de v3.4 heredaba
+   "pointer" del user-agent). Sin esto, cada botón necesitaría cursor-pointer a mano. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* Etiquetas del mapa de montajes del dashboard (DashboardMontajesMap, MapLibre GL):
+   texto plano con halo blanco, para que se lea como un cartel de mapa "de verdad" en vez
+   de un tooltip de UI. Es un <span> propio armado a mano dentro del marker (no un
+   tooltip de alguna librería), así que no compite con ningún CSS por defecto. */
+.dashboard-map-label {
+  margin-top: 2px;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c24-navy);
+  text-shadow:
+    0 0 3px #fff,
+    0 0 3px #fff,
+    0 0 3px #fff,
+    0 0 3px #fff;
+}
+
+/* Tarjeta de estado al pasar el cursor sobre un pin (Popup de MapLibre): se pisa el
+   look por defecto (burbuja gris con flecha gruesa) por el mismo estilo de tarjeta
+   blanca que usa el resto de la app. Sin flecha (::after) para que quede una tarjeta
+   limpia "flotando" arriba del pin, en vez de una burbuja de chat. */
+.dashboard-map-popup .maplibregl-popup-content {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--c24-border);
+  box-shadow: 0 10px 25px -5px rgba(0, 60, 91, 0.25);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+.dashboard-map-popup .maplibregl-popup-tip {
+  display: none;
+}
+/* Puramente informativo, nunca interactivo: sin esto, si el popup queda pegado o
+   superpuesto al pin (según el ángulo de la cámara con pitch), el mouse "entra" al
+   popup en vez de al pin y dispara un parpadeo infinito abrir/cerrar. */
+.dashboard-map-popup {
+  pointer-events: none;
+}

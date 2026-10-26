@@ -14,15 +14,15 @@ export default async function AjustesPage() {
       <h1 className="text-2xl font-semibold text-c24-navy">Ajustes</h1>
       <p className="mt-1 text-sm text-c24-text-muted">Gestiona tu perfil y tu contraseña.</p>
 
-      <Card title="Foto de perfil" className="mt-8">
+      <Card light title="Foto de perfil" className="mt-8">
         <AvatarUploader currentAvatar={user.avatar} name={user.name} />
       </Card>
 
-      <Card title="Datos personales" className="mt-6">
+      <Card light title="Datos personales" className="mt-6">
         <ProfileForm defaultName={user.name} defaultEmail={user.email} />
       </Card>
 
-      <Card title="Cambiar contraseña" className="mt-6">
+      <Card light title="Cambiar contraseña" className="mt-6">
         <PasswordForm />
       </Card>
     </div>

@@ -23,6 +23,9 @@ services:
       AUTH_URL: ${AUTH_URL}
     ports:
       - "127.0.0.1:3001:3000"
+    volumes:
+      - go_app_uploads:/app/uploads
 
 volumes:
   go_postgres_data:
+  go_app_uploads:

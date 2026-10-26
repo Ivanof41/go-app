@@ -29,7 +29,12 @@ export function Modal({ onClose, children, size = "sm" }: ModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8"
+      // z-[1100], no z-50: Leaflet pone sus propios controles/panes en z-index hasta
+      // 1000 (y el dropdown de resultados de AddressMapPicker sube a 1001) — con z-50 un
+      // modal abierto sobre una página que también tiene un mapa (ej. "Añadir sensor"
+      // mientras se edita la dirección del montaje) quedaba TAPADO por los controles de
+      // zoom y la atribución del mapa en vez de al revés.
+      className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 px-4 py-8"
       onMouseDown={(e) => {
         mouseDownOnBackdrop.current = e.target === e.currentTarget;
       }}

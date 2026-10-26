@@ -2,8 +2,10 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, ChevronsUpDown, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronDown, ChevronUp, ChevronsUpDown, FileText, Pencil, Search, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Tooltip } from "@/components/ui/Tooltip";
 import type { SensorFormValues } from "@/components/inventario/SensorForm";
 import { getSensorTypeIcon, getSensorTypeLabel } from "@/lib/inventario/sensor-types";
 import { formatEuro } from "@/lib/inventario/format";
@@ -29,6 +31,7 @@ const COLUMNS: { key: SortKey; label: string }[] = [
 ];
 
 export function SensorsTable({ sensors }: { sensors: SensorRow[] }) {
+  const router = useRouter();
   const [deleteTarget, setDeleteTarget] = useState<SensorRow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDelete] = useTransition();
@@ -87,26 +90,18 @@ export function SensorsTable({ sensors }: { sensors: SensorRow[] }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative w-64">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-c24-text-muted"
-            strokeWidth={1.75}
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar sensor…"
-            className="w-full rounded-md border border-c24-border bg-white py-2.5 pr-3 pl-9 text-sm text-c24-navy placeholder:text-c24-text-muted/60 outline-none transition focus:border-c24-teal focus:ring-2 focus:ring-c24-teal/30"
-          />
-        </div>
-        <Link
-          href="/inventario/sensores/nuevo"
-          className="flex items-center rounded-md bg-c24-navy px-4 py-2.5 text-sm font-medium text-white transition hover:bg-c24-teal-dark"
-        >
-          <Plus className="mr-1.5 h-4 w-4" strokeWidth={1.75} /> Nuevo sensor
-        </Link>
+      <div className="relative w-64">
+        <Search
+          className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-c24-text-muted"
+          strokeWidth={1.75}
+        />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar sensor…"
+          className="w-full rounded-md border border-c24-border bg-white py-2.5 pr-3 pl-9 text-sm text-c24-navy placeholder:text-c24-text-muted/60 outline-none transition focus:border-c24-teal focus:ring-2 focus:ring-c24-teal/30"
+        />
       </div>
 
       <div className="mt-4 overflow-x-auto">
@@ -122,12 +117,22 @@ export function SensorsTable({ sensors }: { sensors: SensorRow[] }) {
                       type="button"
                       onClick={() => toggleSort(col.key)}
                       className={clsx(
-                        "flex items-center gap-1 transition hover:text-c24-navy",
+                        "group flex items-center gap-1 transition hover:text-c24-navy",
                         active && "text-c24-navy",
                       )}
                     >
                       {col.label}
-                      <SortIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      {/* Opacidad baja cuando la columna no está activa: el ícono de
+                          orden siempre visible competía en peso visual con el título,
+                          dando sensación de header "descentrado" respecto del dato de
+                          abajo aunque el borde izquierdo coincida exactamente. */}
+                      <SortIcon
+                        className={clsx(
+                          "h-3.5 w-3.5 transition-opacity",
+                          active ? "opacity-100" : "opacity-40 group-hover:opacity-100",
+                        )}
+                        strokeWidth={1.75}
+                      />
                     </button>
                   </th>
                 );
@@ -139,11 +144,15 @@ export function SensorsTable({ sensors }: { sensors: SensorRow[] }) {
             {sortedSensors.map((s) => {
               const TypeIcon = getSensorTypeIcon(s.type);
               return (
-                <tr key={s.id} className="transition hover:bg-white">
+                <tr
+                  key={s.id}
+                  onClick={() => router.push(`/inventario/sensores/${s.id}/editar`)}
+                  className="cursor-pointer transition hover:bg-c24-teal-light/50"
+                >
                   <td className="py-2.5">
                     <span
                       title={getSensorTypeLabel(s.type)}
-                      className="flex h-7 w-7 items-center justify-center rounded-md bg-c24-teal-light text-c24-navy"
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-c24-navy"
                     >
                       <TypeIcon className="h-4 w-4" strokeWidth={1.75} />
                     </span>
@@ -154,25 +163,42 @@ export function SensorsTable({ sensors }: { sensors: SensorRow[] }) {
                   <td className="py-2.5 text-c24-navy">{s.providerName ?? "—"}</td>
                   <td className="py-2.5 text-c24-navy">{formatEuro(s.purchasePrice)}</td>
                   <td className="py-2.5 text-c24-navy">{formatEuro(s.salePrice)}</td>
-                  <td className="py-2.5 text-right whitespace-nowrap">
-                    <Link
-                      href={`/inventario/sensores/${s.id}/editar`}
-                      aria-label="Editar"
-                      className="inline-flex p-1.5 text-c24-text-muted hover:text-c24-navy"
-                    >
-                      <Pencil className="h-4 w-4" strokeWidth={1.75} />
-                    </Link>
-                    <button
-                      type="button"
-                      aria-label="Eliminar"
-                      onClick={() => {
-                        setDeleteTarget(s);
-                        setDeleteError(null);
-                      }}
-                      className="p-1.5 text-c24-text-muted hover:text-c24-danger"
-                    >
-                      <Trash2 className="h-4 w-4" strokeWidth={1.75} />
-                    </button>
+                  <td className="py-2.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    {s.manualPath && (
+                      <Tooltip label="Ver manual">
+                        <a
+                          href={`/api/sensores/manual/${s.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label="Ver manual"
+                          className="inline-flex p-1.5 text-c24-text-muted hover:text-c24-navy"
+                        >
+                          <FileText className="h-4 w-4" strokeWidth={1.75} />
+                        </a>
+                      </Tooltip>
+                    )}
+                    <Tooltip label="Editar sensor">
+                      <Link
+                        href={`/inventario/sensores/${s.id}/editar`}
+                        aria-label="Editar"
+                        className="inline-flex p-1.5 text-c24-text-muted hover:text-c24-navy"
+                      >
+                        <Pencil className="h-4 w-4" strokeWidth={1.75} />
+                      </Link>
+                    </Tooltip>
+                    <Tooltip label="Eliminar sensor">
+                      <button
+                        type="button"
+                        aria-label="Eliminar"
+                        onClick={() => {
+                          setDeleteTarget(s);
+                          setDeleteError(null);
+                        }}
+                        className="inline-flex p-1.5 text-c24-text-muted hover:text-c24-danger"
+                      >
+                        <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+                      </button>
+                    </Tooltip>
                   </td>
                 </tr>
               );

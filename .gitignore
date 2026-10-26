@@ -20,6 +20,9 @@
 # production
 /build
 
+# fotos de Montajes subidas en dev (en prod viven en un volumen Docker, no en el repo)
+/uploads
+
 # misc
 .DS_Store
 *.pem

@@ -16,14 +16,16 @@ type Zone = {
   rowLabels: string[] | null;
   stock: ZoneGridCell[];
 };
-type SensorOption = { id: string; name: string; type: string };
+type ItemOption = { id: string; name: string; type: string };
 
 export function ZonasPageActions({
   zones,
   sensorOptions,
+  accessoryOptions,
 }: {
   zones: Zone[];
-  sensorOptions: SensorOption[];
+  sensorOptions: ItemOption[];
+  accessoryOptions: ItemOption[];
 }) {
   const [showAddStock, setShowAddStock] = useState(false);
 
@@ -42,6 +44,7 @@ export function ZonasPageActions({
       {showAddStock && (
         <AddStockModal
           sensorOptions={sensorOptions}
+          accessoryOptions={accessoryOptions}
           zones={zones}
           onSaved={() => setShowAddStock(false)}
           onClose={() => setShowAddStock(false)}
