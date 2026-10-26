@@ -15,6 +15,7 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
+    "exceljs": "^4.4.0",
     "fabric": "6.9.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.33.0",

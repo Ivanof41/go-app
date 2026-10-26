@@ -12,6 +12,7 @@ import { db } from "@/db";
 import { accessories, brands, providers, sensorAccessories, sensors, sensorStock, technologies } from "@/db/schema";
 import { SENSOR_TYPE_VALUES } from "@/lib/inventario/sensor-types";
 import { MANUAL_EXT_BY_MIME, MAX_MANUAL_BYTES, SENSOR_MANUALS_DIR } from "@/lib/uploads";
+import { MAX_IMPORT_BYTES, parseSensorWorkbook, resolveSensorType } from "@/lib/inventario/sensor-import";
 
 export type ActionState = { error?: string; success?: string } | undefined;
 
@@ -444,6 +445,150 @@ export async function updateSensorAction(_prev: ActionState, formData: FormData)
 
   revalidatePath("/inventario/sensores");
   redirect("/inventario/sensores");
+}
+
+export type ImportSensorsState =
+  | {
+      error?: string;
+      rowErrors?: { row: number; message: string }[];
+      created?: number;
+      skipped?: { row: number; name: string; reason: string }[];
+      newCatalogEntries?: number;
+    }
+  | undefined;
+
+const importRowSchema = sensorSchema.omit({ brandId: true, technologyId: true, providerId: true }).extend({
+  brand: z.string().max(150, "Marca: máximo 150 caracteres"),
+  technology: z.string().max(150, "Tecnología: máximo 150 caracteres"),
+  provider: z.string().max(150, "Proveedor: máximo 150 caracteres"),
+});
+
+// En Excel la gente escribe "45,90", "45.90 €" o deja un número real — se normaliza a
+// algo que z.coerce.number entienda antes de validar. Si queda algo raro (ej. "abc"),
+// lo rechaza el schema con su mensaje de siempre.
+function normalizePrice(value: string) {
+  const cleaned = value.replace(/€/g, "").replace(/\s/g, "");
+  return cleaned.includes(",") ? cleaned.replace(/\./g, "").replace(",", ".") : cleaned;
+}
+
+// Alta masiva desde la plantilla Excel (ver src/lib/inventario/sensor-import.ts).
+// Todo o nada: si una sola fila es inválida no se escribe nada y se devuelven todos
+// los errores juntos, para que el usuario corrija el archivo de una vez y lo vuelva a
+// subir — una importación a medias deja al usuario sin saber qué filas entraron.
+// Un sensor con el mismo nombre (sin distinguir mayúsculas) que uno existente o que
+// otra fila anterior del archivo se omite en vez de fallar: así resubir el mismo
+// archivo tras añadirle filas no duplica lo ya importado.
+export async function importSensorsAction(_prev: ImportSensorsState, formData: FormData): Promise<ImportSensorsState> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Sesión expirada" };
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Selecciona un archivo Excel" };
+  if (file.size > MAX_IMPORT_BYTES) return { error: "El archivo no puede superar 5 MB" };
+  if (!file.name.toLowerCase().endsWith(".xlsx")) return { error: "Formato no soportado (solo .xlsx)" };
+
+  const parsedFile = await parseSensorWorkbook(await file.arrayBuffer());
+  if ("error" in parsedFile) return { error: parsedFile.error };
+
+  const [existingSensors, existingBrands, existingTechnologies, existingProviders] = await Promise.all([
+    db.select({ name: sensors.name }).from(sensors),
+    db.select({ id: brands.id, name: brands.name }).from(brands),
+    db.select({ id: technologies.id, name: technologies.name }).from(technologies),
+    db.select({ id: providers.id, name: providers.name }).from(providers),
+  ]);
+
+  const key = (s: string) => s.trim().toLowerCase();
+  const seenNames = new Map<string, number | null>(existingSensors.map((s) => [key(s.name), null]));
+
+  const rowErrors: { row: number; message: string }[] = [];
+  const skipped: { row: number; name: string; reason: string }[] = [];
+  const valid: { row: number; data: z.infer<typeof importRowSchema> }[] = [];
+
+  for (const raw of parsedFile.rows) {
+    const type = raw.type ? resolveSensorType(raw.type) : null;
+    if (raw.type && !type) {
+      rowErrors.push({ row: raw.rowNumber, message: `Tipo «${raw.type}» no reconocido` });
+      continue;
+    }
+    const result = importRowSchema.safeParse({
+      name: raw.name,
+      type: type ?? undefined,
+      brand: raw.brand,
+      technology: raw.technology,
+      provider: raw.provider,
+      purchasePrice: normalizePrice(raw.purchasePrice),
+      salePrice: normalizePrice(raw.salePrice),
+      notes: raw.notes || undefined,
+    });
+    if (!result.success) {
+      rowErrors.push({ row: raw.rowNumber, message: result.error.issues[0]?.message ?? "Datos inválidos" });
+      continue;
+    }
+
+    for (const [label, value] of [
+      ["Marca", result.data.brand],
+      ["Tecnología", result.data.technology],
+      ["Proveedor", result.data.provider],
+    ] as const) {
+      if (value && value.length < 2) rowErrors.push({ row: raw.rowNumber, message: `${label}: mínimo 2 caracteres` });
+    }
+
+    const nameKey = key(result.data.name);
+    if (seenNames.has(nameKey)) {
+      const firstRow = seenNames.get(nameKey);
+      skipped.push({
+        row: raw.rowNumber,
+        name: result.data.name,
+        reason: firstRow ? `repetido en la fila ${firstRow}` : "ya existe en la app",
+      });
+      continue;
+    }
+    seenNames.set(nameKey, raw.rowNumber);
+    valid.push({ row: raw.rowNumber, data: result.data });
+  }
+
+  if (rowErrors.length > 0) return { error: "Hay filas con errores. No se importó nada.", rowErrors };
+  if (valid.length === 0) return { created: 0, skipped };
+
+  let newCatalogEntries = 0;
+  await db.transaction(async (tx) => {
+    // Marca/Tecnología/Proveedor se buscan por nombre sin distinguir mayúsculas y se
+    // crean si faltan — mismo resultado que el "crear al vuelo" del formulario.
+    async function resolveCatalog(
+      table: typeof brands | typeof technologies | typeof providers,
+      existing: { id: string; name: string }[],
+      names: string[],
+    ) {
+      const ids = new Map(existing.map((e) => [key(e.name), e.id]));
+      for (const name of names) {
+        if (!name || ids.has(key(name))) continue;
+        const [row] = await tx.insert(table).values({ name }).returning({ id: table.id });
+        ids.set(key(name), row.id);
+        newCatalogEntries++;
+      }
+      return (name: string) => (name ? (ids.get(key(name)) ?? null) : null);
+    }
+
+    const brandId = await resolveCatalog(brands, existingBrands, valid.map((v) => v.data.brand));
+    const technologyId = await resolveCatalog(technologies, existingTechnologies, valid.map((v) => v.data.technology));
+    const providerId = await resolveCatalog(providers, existingProviders, valid.map((v) => v.data.provider));
+
+    await tx.insert(sensors).values(
+      valid.map(({ data }) => ({
+        name: data.name,
+        type: data.type,
+        brandId: brandId(data.brand),
+        technologyId: technologyId(data.technology),
+        providerId: providerId(data.provider),
+        purchasePrice: data.purchasePrice,
+        salePrice: data.salePrice,
+        notes: data.notes ?? null,
+      })),
+    );
+  });
+
+  revalidatePath("/inventario/sensores");
+  return { created: valid.length, skipped, newCatalogEntries };
 }
 
 export async function deleteSensorAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

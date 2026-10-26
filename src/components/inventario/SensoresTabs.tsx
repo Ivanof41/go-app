@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { FileSpreadsheet, Plus } from "lucide-react";
 import { SensorsTable } from "@/components/inventario/SensorsTable";
+import { ImportSensorsModal } from "@/components/inventario/ImportSensorsModal";
 import { AccessoriesTable, type AccessoryRow } from "@/components/inventario/AccessoriesTable";
 import { clsx } from "@/lib/clsx";
 import type { SensorFormValues } from "@/components/inventario/SensorForm";
@@ -24,6 +25,8 @@ export function SensoresTabs({
   initialTab: "sensores" | "accesorios";
 }) {
   const [tab, setTab] = useState<"sensores" | "accesorios">(initialTab);
+  const [importOpen, setImportOpen] = useState(false);
+
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
@@ -51,6 +54,13 @@ export function SensoresTabs({
         </div>
 
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className="flex items-center rounded-md border border-c24-border px-4 py-2.5 text-sm font-medium text-c24-navy transition hover:bg-c24-teal-light"
+          >
+            <FileSpreadsheet className="mr-1.5 h-4 w-4" strokeWidth={1.75} /> Importar Excel
+          </button>
           <Link
             href="/inventario/sensores/accesorios/nuevo"
             className="flex items-center rounded-md border border-c24-border px-4 py-2.5 text-sm font-medium text-c24-navy transition hover:bg-c24-teal-light"
@@ -69,6 +79,8 @@ export function SensoresTabs({
       <div className="mt-4">
         {tab === "sensores" ? <SensorsTable sensors={sensors} /> : <AccessoriesTable accessories={accessories} />}
       </div>
+
+      {importOpen && <ImportSensorsModal onClose={() => setImportOpen(false)} />}
     </div>
   );
 }
